@@ -1,4 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { doc, onSnapshot, setDoc } from "firebase/firestore";
+import { db, HOUSEHOLD_ID } from "./firebase";
 
 function computeSSS(s) {
   const salary = Math.min(Math.max(s, 4250), 29750);
@@ -189,6 +191,59 @@ export default function App() {
   const ff = (k,v) => setForm(x=>({...x,[k]:v}));
   const closeModal = () => { setModal(null); setForm({}); };
 
+  // ── CLOUD SYNC ──────────────────────────────────────────────────────────
+  const [cloudLoaded, setCloudLoaded] = useState(false);
+  const [syncStatus, setSyncStatus] = useState("connecting"); // connecting | synced | saving | error
+
+  // Load data from Firestore on first mount, and keep listening for changes
+  // made on other devices (real-time sync).
+  useEffect(() => {
+    const ref = doc(db, "pesotrack", HOUSEHOLD_ID);
+    const unsub = onSnapshot(ref,
+      (snap) => {
+        if (snap.exists()) {
+          const d = snap.data();
+          const eq = (a,b)=>JSON.stringify(a)===JSON.stringify(b);
+          if (d.incomeSources)  setIncomeSources(p=>eq(p,d.incomeSources)?p:d.incomeSources);
+          if (d.receivedIncome) setReceivedIncome(p=>eq(p,d.receivedIncome)?p:d.receivedIncome);
+          if (d.expenses)       setExpenses(p=>eq(p,d.expenses)?p:d.expenses);
+          if (d.bills)          setBills(p=>eq(p,d.bills)?p:d.bills);
+          if (d.cards)          setCards(p=>eq(p,d.cards)?p:d.cards);
+          if (d.budgets)        setBudgets(p=>eq(p,d.budgets)?p:d.budgets);
+          if (d.partnerNames)   setPartnerNames(p=>eq(p,d.partnerNames)?p:d.partnerNames);
+          if (d.salaries)       setSalaries(p=>eq(p,d.salaries)?p:d.salaries);
+        }
+        setCloudLoaded(true);
+        setSyncStatus("synced");
+      },
+      (err) => {
+        console.error("Firestore sync error:", err);
+        setSyncStatus("error");
+        setCloudLoaded(true);
+      }
+    );
+    return () => unsub();
+  }, []);
+
+  // Whenever local data changes (after the initial cloud load), push it to
+  // Firestore so other devices pick it up. Debounced to avoid spamming writes.
+  useEffect(() => {
+    if (!cloudLoaded) return;
+    setSyncStatus("saving");
+    const t = setTimeout(() => {
+      const ref = doc(db, "pesotrack", HOUSEHOLD_ID);
+      setDoc(ref, {
+        incomeSources, receivedIncome, expenses, bills, cards, budgets, partnerNames, salaries,
+        updatedAt: new Date().toISOString(),
+      }, { merge: true })
+        .then(() => setSyncStatus("synced"))
+        .catch((err) => { console.error("Firestore save error:", err); setSyncStatus("error"); });
+    }, 800);
+    return () => clearTimeout(t);
+  }, [incomeSources, receivedIncome, expenses, bills, cards, budgets, partnerNames, salaries, cloudLoaded]);
+  // ─────────────────────────────────────────────────────────────────────────
+
+
   const totalIncome   = useMemo(()=>receivedIncome.reduce((s,i)=>s+i.amount,0),[receivedIncome]);
   const totalExpenses = useMemo(()=>expenses.reduce((s,e)=>s+e.amount,0),[expenses]);
   const totalBills    = useMemo(()=>bills.reduce((s,b)=>s+b.amount,0),[bills]);
@@ -274,6 +329,7 @@ export default function App() {
     select option{background:#F5F0E8}
     input[type=number]::-webkit-inner-spin-button{opacity:.4}
     button:hover{opacity:.82}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
   `;
 
   const earnerColor = e => e==="Joint"?"#38BDF8":e==="Partner"?"#F472B6":"#0D9E80";
@@ -305,6 +361,12 @@ export default function App() {
             <div style={{fontSize:10,color:"#78716C",textTransform:"uppercase",letterSpacing:".06em",marginBottom:5}}>Household Net Cash</div>
             <div style={{fontFamily:"Plus Jakarta Sans",fontWeight:800,fontSize:24,letterSpacing:"-0.03em",color:netCash>=0?"#0D9E80":"#D94F4F"}}>{netCash<0&&"−"}{peso(netCash)}</div>
             <div style={{fontSize:10,color:"#78716C",marginTop:2}}>after expenses & bills</div>
+            <div style={{display:"flex",alignItems:"center",gap:6,marginTop:12,paddingTop:10,borderTop:"1px solid #DDD8CE"}}>
+              {syncStatus==="connecting" && <><span style={{width:7,height:7,borderRadius:"50%",background:"#78716C",flexShrink:0}}/><span style={{fontSize:10,color:"#78716C"}}>Connecting…</span></>}
+              {syncStatus==="saving"     && <><span style={{width:7,height:7,borderRadius:"50%",background:"#C97A0A",flexShrink:0,animation:"pulse 1s infinite"}}/><span style={{fontSize:10,color:"#C97A0A"}}>Saving…</span></>}
+              {syncStatus==="synced"     && <><span style={{width:7,height:7,borderRadius:"50%",background:"#0D9E80",flexShrink:0}}/><span style={{fontSize:10,color:"#0D9E80"}}>Synced across devices</span></>}
+              {syncStatus==="error"      && <><span style={{width:7,height:7,borderRadius:"50%",background:"#D94F4F",flexShrink:0}}/><span style={{fontSize:10,color:"#D94F4F"}}>Sync error — check setup</span></>}
+            </div>
           </div>
         </aside>
 
