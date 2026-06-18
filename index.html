@@ -1,0 +1,2802 @@
+<!DOCTYPE html>
+<html lang="en" style="scroll-behavior: smooth;">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Finance Tracker</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #F5F0E8; font-family: 'Manrope', sans-serif; color: #1C1917; min-height: 100vh; display: flex; -webkit-font-smoothing: antialiased; }
+    
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: #F5F0E8; }
+    ::-webkit-scrollbar-thumb { background: #C8C2B6; border-radius: 3px; }
+    
+    input::placeholder { color: #A89E94; }
+    select option { background: #F5F0E8; }
+    input[type=number]::-webkit-inner-spin-button { opacity: .4; }
+    button:hover { opacity: .85; }
+    
+    h1, h2, h3, h4, .font-header { font-family: 'Plus Jakarta Sans', sans-serif; }
+    
+    aside { width: 230px; background: #EAE4D8; border-right: 1px solid #DDD8CE; display: flex; flex-direction: column; padding: 24px 0; position: sticky; top: 0; height: 100vh; flex-shrink: 0; }
+    main { flex: 1; padding: 32px; overflow-y: auto; min-width: 0; }
+    
+    .nav-btn { display: flex; align-items: center; gap: 10px; width: 100%; padding: 12px 14px; border: none; cursor: pointer; background: transparent; color: #6B6661; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; font-weight: 600; margin-bottom: 3px; text-align: left; transition: all .15s; border-left: 3px solid transparent; }
+    .nav-btn.active { background: #DDD8CE; color: #1C1917; font-weight: 700; border-left: 3px solid #0D9E80; }
+    
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px; margin-bottom: 24px; }
+    
+    .card { background: #FDFAF5; border-radius: 14px; padding: 20px; border: 1px solid #DDD8CE; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+    .tag { font-size: 10px; font-family: 'Plus Jakarta Sans', sans-serif; border-radius: 6px; padding: 3px 8px; font-weight: 700; letter-spacing: .05em; white-space: nowrap; display: inline-block; }
+    
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 300; display: flex; align-items: center; justify-content: center; padding: 16px; backdrop-filter: blur(2px); }
+    .modal-content { background: #F5F0E8; border-radius: 16px; padding: 28px; width: 100%; max-width: 440px; border: 1px solid #C8C2B6; max-height: 92vh; overflow-y: auto; box-shadow: 0 24px 60px rgba(0,0,0,.15); position: relative; }
+    
+    .form-group { margin-bottom: 14px; }
+    .form-label { display: block; color: #6B6661; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 10px; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; letter-spacing: .08em; }
+    .form-input { width: 100%; background: #EDE8DE; border: 1px solid #C8C2B6; border-radius: 8px; padding: 10px 14px; color: #1C1917; font-size: 14px; outline: none; font-family: inherit; font-weight: 500; transition: border-color .15s; }
+    .form-input:focus { border-color: #0D9E80; }
+    
+    .modern-input-field { width: 100%; background: #FDFAF5; border: 1px solid #C8C2B6; border-radius: 6px; padding: 6px 10px; color: #1C1917; font-size: 13px; font-weight: 600; text-align: right; outline: none; font-family: 'Manrope', sans-serif; transition: border-color 0.15s, box-shadow 0.15s; }
+    .modern-input-field:focus { border-color: #0D9E80; box-shadow: 0 0 0 2px rgba(13, 158, 128, 0.12); }
+    .money-input { text-align: right; font-variant-numeric: tabular-nums; }
+    .date-input { font-variant-numeric: tabular-nums; }
+    
+    .btn { padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 13px; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; border: none; transition: opacity .15s; display: inline-flex; align-items: center; justify-content: center; }
+    .btn-primary { background: #0D9E80; color: #fff; }
+    .btn-ghost { background: transparent; color: #57534E; border: 1px solid #C8C2B6; }
+    
+    .list-item { display: flex; align-items: center; gap: 14px; padding: 14px 20px; background: #FDFAF5; border-radius: 12px; border: 1px solid #DDD8CE; margin-bottom: 8px; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
+    .pulse { animation: pulse 1s infinite; }
+
+
+    .toolbar { display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap; margin-bottom:16px; }
+    .filter-row { display:grid; grid-template-columns: 1.4fr .9fr .9fr .9fr auto; gap:10px; margin-bottom:16px; }
+    .mini-stat { background:#EDE8DE44; border:1px solid #DDD8CE; border-radius:12px; padding:14px; }
+    .mini-stat-label { font-size:10px; color:#78716C; text-transform:uppercase; letter-spacing:.06em; font-family:'Plus Jakarta Sans'; font-weight:800; }
+    .mini-stat-value { font-family:'Plus Jakarta Sans'; font-weight:800; font-size:20px; letter-spacing:-.02em; margin-top:5px; }
+    .alert-panel { display:grid; gap:10px; }
+    .alert-item { display:flex; align-items:flex-start; gap:10px; padding:12px 14px; border-radius:11px; background:#EDE8DE44; border:1px solid #DDD8CE; }
+    .alert-item strong { font-size:13px; }
+    .alert-item p { font-size:11px; color:#78716C; margin-top:2px; line-height:1.45; font-weight:500; }
+    .empty-state { text-align:center; padding:22px; color:#78716C; font-size:13px; font-weight:600; border:1px dashed #C8C2B6; border-radius:12px; background:#EDE8DE22; }
+    .danger-zone { border-color:#D94F4F55; background:#D94F4F08; }
+    .btn-danger { background:#D94F4F; color:#fff; }
+    .btn-small { padding:7px 10px; font-size:11px; }
+    .kbd { font-size:10px; font-weight:800; font-family:'Plus Jakarta Sans'; padding:2px 6px; border-radius:5px; background:#DDD8CE; color:#57534E; }
+    .cash-account-list { display:grid; gap:12px; margin-top:14px; }
+    .cash-account-card { background:#FDFAF5; border:1px solid #DDD8CE; border-radius:14px; padding:14px; display:grid; gap:12px; }
+    .cash-account-card-main { display:grid; grid-template-columns: minmax(180px, 1fr) auto; gap:10px; align-items:center; }
+    .cash-account-actions { display:flex; gap:8px; align-items:center; justify-content:flex-end; }
+    .cash-account-metrics { display:grid; grid-template-columns:repeat(3, minmax(120px, 1fr)); gap:10px; }
+    .cash-account-metric { background:#EDE8DE66; border:1px solid #DDD8CE; border-radius:10px; padding:10px 12px; text-align:right; min-width:0; }
+    .cash-account-metric-label { font-size:9px; color:#78716C; text-transform:uppercase; font-weight:800; letter-spacing:.05em; font-family:'Plus Jakarta Sans'; }
+    .cash-account-metric-value { font-size:14px; font-weight:800; margin-top:4px; overflow-wrap:anywhere; }
+    .cash-account-row { display:grid; gap:10px; align-items:center; }
+    .cash-account-row.compact { grid-template-columns:1fr; }
+    .cash-account-row .form-input, .cash-account-row .modern-input-field { font-size:12px; padding:8px 10px; }
+    .cash-account-row .cash-balance { text-align:right; }
+    .cash-color-input { width:44px; height:36px; padding:3px; border-radius:9px; border:1px solid #C8C2B6; background:#FDFAF5; cursor:pointer; flex:0 0 auto; }
+    .sidebar-backup-actions { display:grid; grid-template-columns:1fr; gap:7px; margin-top:12px; }
+    .sidebar-backup-actions .btn, .sidebar-backup-actions label { width:100%; padding:8px 10px; font-size:11px; }
+    .headroom-detail-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:8px; margin-top:16px; max-width:900px; }
+    .headroom-detail-btn { background:#FDFAF5; border:1px solid #DDD8CE; border-radius:10px; padding:10px 12px; text-align:left; cursor:pointer; transition:transform .15s, border-color .15s, box-shadow .15s; font-family:'Manrope', sans-serif; color:#1C1917; }
+    .headroom-detail-btn:hover { opacity:1; transform:translateY(-1px); border-color:#0D9E80; box-shadow:0 8px 20px rgba(13,158,128,.08); }
+    .headroom-detail-label { font-size:10px; color:#78716C; font-weight:800; text-transform:uppercase; letter-spacing:.05em; font-family:'Plus Jakarta Sans'; }
+    .headroom-detail-value { font-weight:800; margin-top:6px; font-size:15px; }
+    .headroom-detail-hint { font-size:10px; color:#78716C; font-weight:600; margin-top:3px; }
+    .breakdown-list { display:grid; gap:8px; margin-top:14px; }
+    .breakdown-row { display:flex; justify-content:space-between; align-items:flex-start; gap:14px; padding:11px 12px; background:#FDFAF5; border:1px solid #DDD8CE; border-radius:10px; }
+    .breakdown-row-title { font-size:13px; font-weight:800; color:#1C1917; }
+    .breakdown-row-sub { font-size:11px; color:#78716C; font-weight:500; margin-top:2px; line-height:1.4; }
+    .breakdown-row-amount { font-size:14px; font-weight:800; white-space:nowrap; }
+    .nearest-due-banner { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:18px; background:linear-gradient(to right,#FDFAF5,#FFF7ED); border-color:#C97A0A55; }
+
+    .cash-balance-line { display:grid; grid-template-columns: 1fr auto auto; gap:8px; align-items:center; background:#FDFAF5; border:1px solid #DDD8CE; border-radius:12px; padding:8px 10px; }
+    .cash-balance-line .form-input { padding:8px 10px; font-size:12px; }
+    .cash-balance-pill { min-width:110px; text-align:right; font-family:'Plus Jakarta Sans'; font-weight:800; font-size:14px; padding:8px 10px; background:#EDE8DE66; border:1px solid #DDD8CE; border-radius:9px; }
+    .tx-ledger-wrap { width:100%; overflow-x:auto; padding-bottom:2px; }
+    .tx-ledger { display:grid; gap:8px; min-width:1080px; }
+    .tx-ledger-header, .tx-row { display:grid; grid-template-columns: 116px minmax(160px,210px) minmax(260px,1fr) minmax(230px,270px) 140px 132px; gap:12px; align-items:center; }
+    .tx-ledger-header { padding:0 16px 2px; color:#78716C; font-family:'Plus Jakarta Sans'; font-size:10px; font-weight:800; letter-spacing:.07em; text-transform:uppercase; }
+    .tx-row { background:#EDE8DE33; padding:14px 16px; border-radius:12px; border:1px solid #DDD8CE; min-height:68px; }
+    .tx-date-main { font-family:'Plus Jakarta Sans'; font-size:13px; font-weight:800; color:#1C1917; white-space:nowrap; }
+    .tx-date-sub { font-size:10px; color:#78716C; font-weight:700; margin-top:2px; }
+    .tx-category-chip { display:inline-flex; align-items:center; gap:6px; max-width:100%; padding:7px 10px; background:#FDFAF5; border:1px solid #DDD8CE; border-radius:10px; font-size:12px; font-weight:800; color:#1C1917; }
+    .tx-category-chip span:last-child { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .tx-desc-main { font-size:14px; font-weight:800; color:#1C1917; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .tx-desc-sub { font-size:11px; color:#78716C; font-weight:600; margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .tx-source-badge { background:#FDFAF5; border:1px solid #DDD8CE; border-left:6px solid #6B7280; border-radius:12px; padding:10px 12px; min-width:0; }
+    .tx-source-type { font-size:9px; color:#78716C; font-weight:800; text-transform:uppercase; letter-spacing:.06em; font-family:'Plus Jakarta Sans'; }
+    .tx-source-name { font-size:15px; color:#1C1917; font-weight:800; margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .tx-amount { text-align:right; font-family:'Plus Jakarta Sans'; font-weight:800; font-size:17px; white-space:nowrap; }
+    .tx-actions { display:flex; gap:7px; justify-content:flex-end; align-items:center; }
+    .amortization-section { margin-top:26px; }
+    .amortization-list { display:grid; gap:8px; margin-top:14px; }
+    .amortization-row { display:grid; grid-template-columns: minmax(220px,1fr) 130px 120px 120px 112px auto; gap:10px; align-items:center; background:#FDFAF5; border:1px solid #DDD8CE; border-radius:12px; padding:12px 14px; }
+    .amort-title { font-size:13px; font-weight:800; color:#1C1917; }
+    .amort-sub { font-size:10px; color:#78716C; font-weight:600; margin-top:2px; line-height:1.35; }
+    .amort-value { font-size:13px; font-weight:800; text-align:right; }
+    .amort-due-card { background:#EDE8DE44; border:1px solid #DDD8CE; border-radius:10px; padding:8px 10px; }
+
+
+    @media (max-width: 860px) {
+      body { display:block; }
+      aside { width:100%; height:auto; position:relative; border-right:none; border-bottom:1px solid #DDD8CE; padding:18px 0 0; }
+      #sidebar-nav { display:flex; gap:6px; overflow-x:auto; padding:0 12px 12px !important; }
+      .nav-btn { min-width:max-content; border-left:none; border-bottom:3px solid transparent; border-radius:10px 10px 0 0; margin-bottom:0; }
+      .nav-btn.active { border-left:none; border-bottom:3px solid #0D9E80; }
+      aside > div:last-child { display:block; padding:14px 20px 18px; }
+      main { padding:20px; }
+      .grid-2, .grid-3 { grid-template-columns:1fr; }
+      .filter-row { grid-template-columns:1fr; }
+      .cash-account-card-main { grid-template-columns:1fr; }
+      .cash-account-actions { justify-content:flex-start; }
+      .cash-balance-line { grid-template-columns:1fr; }
+      .cash-balance-pill { text-align:left; }
+      .tx-ledger { min-width:0; }
+      .tx-ledger-header { display:none; }
+      .tx-row { grid-template-columns:1fr; }
+      .tx-amount { text-align:left; }
+      .tx-actions { justify-content:flex-start; }
+      .amortization-row { grid-template-columns:1fr; }
+      .amort-value { text-align:left; }
+      .cash-account-metrics { grid-template-columns:1fr; }
+      .cash-account-row, .cash-account-row.compact { grid-template-columns:1fr; }
+      .nearest-due-banner { align-items:flex-start; flex-direction:column; }
+      .card { padding:16px; }
+    }
+
+
+    .cloud-panel { margin-top:14px; padding-top:12px; border-top:1px solid #DDD8CE; }
+    .cloud-status-pill { display:flex; align-items:center; gap:7px; font-size:10px; color:#78716C; font-weight:700; line-height:1.35; }
+    .cloud-dot { width:7px; height:7px; border-radius:50%; background:#A89E94; flex:0 0 auto; }
+    .cloud-dot.online { background:#0D9E80; }
+    .cloud-dot.error { background:#D94F4F; }
+    .cloud-user { margin-top:5px; font-size:10px; color:#57534E; overflow-wrap:anywhere; font-weight:600; }
+    .auth-note { font-size:11px; color:#78716C; line-height:1.45; font-weight:500; margin:8px 0 16px; }
+  </style>
+</head>
+<body>
+
+  <aside>
+    <div style="padding: 0 20px 24px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg,#0D9E80,#0066FF); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: #fff; font-family: 'Plus Jakarta Sans';">₱</div>
+        <div>
+          <div style="font-family: 'Plus Jakarta Sans'; font-weight: 800; font-size: 15px; color: #1C1917; letter-spacing: -0.01em;">Finance Tracker</div>
+          <div style="font-size: 10px; color: #78716C; font-weight: 600; font-family: 'Plus Jakarta Sans';">DINK Financial Engine</div>
+        </div>
+      </div>
+    </div>
+    
+    <nav style="flex: 1; padding: 0 12px;" id="sidebar-nav"></nav>
+    
+    <div style="padding: 16px 20px; border-top: 1px solid #DDD8CE;">
+      <div style="font-size: 10px; color: #78716C; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; font-family: 'Plus Jakarta Sans'; font-weight: 700;">Household Net Cash</div>
+      <div id="sidebar-net-cash" style="font-family: 'Plus Jakarta Sans'; font-weight: 800; font-size: 26px; letter-spacing: -0.03em;">₱0</div>
+      <div style="font-size: 10px; color: #78716C; margin-top: 2px;">matched cash income less matched cash expenses</div>
+      <div style="margin-top:14px; padding-top:12px; border-top:1px solid #DDD8CE;">
+        <div style="font-size:10px; color:#78716C; text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px; font-family:'Plus Jakarta Sans'; font-weight:700;">Backup & Restore</div>
+        <div class="sidebar-backup-actions">
+          <button class="btn btn-primary" onclick="exportData()">Export Backup</button>
+          <label class="btn btn-ghost" style="cursor:pointer;">
+            Import Backup
+            <input type="file" accept="application/json" onchange="importData(event)" style="display:none;" />
+          </label>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 6px; margin-top: 14px; padding-top: 12px; border-top: 1px solid #DDD8CE;">
+        <span style="width: 7px; height: 7px; border-radius: 50%; background: #0D9E80;"></span>
+        <span style="font-size: 10px; color: #0D9E80; font-weight: 600;" id="storage-status">Saved Locally</span>
+      </div>
+      <div class="cloud-panel">
+        <div style="font-size:10px; color:#78716C; text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px; font-family:'Plus Jakarta Sans'; font-weight:700;">Cloud Sync</div>
+        <div class="cloud-status-pill"><span id="cloud-dot" class="cloud-dot"></span><span id="cloud-status">Local mode</span></div>
+        <div id="cloud-user" class="cloud-user"></div>
+        <div class="sidebar-backup-actions">
+          <button id="cloud-login-btn" class="btn btn-primary" onclick="openCloudLogin()">Cloud Login</button>
+          <button id="cloud-sync-btn" class="btn btn-ghost" onclick="saveCloudNow(true)" style="display:none;">Sync Now</button>
+          <button id="cloud-signout-btn" class="btn btn-ghost" onclick="signOutCloud()" style="display:none;">Sign Out</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main id="main-content"></main>
+
+  <div id="modal-container" style="display: none;"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // ─── SUPABASE CLOUD CONFIG ───
+    const SUPABASE_URL = "https://piuycfvvzkzzoyngvqzc.supabase.co";
+    const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_Y-TYmDXIEDc3I6vUED1ZOg_pNsFirSx";
+
+    // ─── ENGINE CONSTANTS ───
+    const CATS = [
+      {v:"food",l:"Food & Groceries",i:"🛒"},{v:"dining",l:"Dining Out",i:"🍽️"},
+      {v:"transport",l:"Transport / Fuel",i:"🚗"},{v:"utilities",l:"Utilities",i:"💡"},
+      {v:"rent",l:"Rent / Housing",i:"🏠"},{v:"health",l:"Health & Wellness",i:"🏥"},
+      {v:"fitness",l:"Gym & Fitness",i:"💪"},{v:"travel",l:"Travel & Vacations",i:"✈️"},
+      {v:"entertainment",l:"Entertainment",i:"🎬"},{v:"shopping",l:"Shopping",i:"🛍️"},
+      {v:"date",l:"Date Nights",i:"🌙"},{v:"home",l:"Home Improvement",i:"🔧"},
+      {v:"savings",l:"Savings / Investment",i:"🏦"},{v:"load",l:"Mobile / Internet",i:"📱"},
+      {v:"pets",l:"Pets",i:"🐾"},{v:"other",l:"Other",i:"📌"}
+    ];
+    
+    const CAT_COLORS = {
+      food:"#0D9E80", dining:"#D94F4F", transport:"#4F54D4", utilities:"#38BDF8",
+      rent:"#818CF8", health:"#4ADE80", fitness:"#34D399", travel:"#60A5FA",
+      entertainment:"#F472B6", shopping:"#FB923C", date:"#E879F9", home:"#A16207",
+      savings:"#2DD4BF", load:"#94A3B8", pets:"#FDBA74", other:"#6B7280"
+    };
+
+    // ─── INITIAL APP DATA SEED ───
+    const INIT_CARDS = [
+      {id:"cc1",name:"BPI Amore",bank:"BPI",limit:50000,statementBalance:8420,outstandingBalance:8420,cutDay:28,dueDay:22,color:"#D94F4F"},
+      {id:"cc2",name:"BDO Cashback",bank:"BDO",limit:80000,statementBalance:15300,outstandingBalance:15300,cutDay:5,dueDay:25,color:"#C97A0A"}
+    ];
+    const INIT_SOURCES = [
+      {id:"s1",desc:"Freelance Blueprint Portfolio",expectedAmt:8000,earner:"you"}
+    ];
+    const INIT_RECEIVED = [
+      {id:"i1",desc:"Primary Salary",amount:65000,date:"2026-06-01",type:"salary",earner:"You",via:"Bank Account 1"},
+      {id:"i2",desc:"Partner Base Salary",amount:52000,date:"2026-06-01",type:"salary",earner:"Partner",via:"Bank Account 1"}
+    ];
+    const INIT_EXPENSES = [
+      {id:"e1",desc:"S&R Wholesale",amount:3850,date:"2026-06-02",cat:"food",via:"BPI Amore",earner:"Joint"},
+      {id:"e2",desc:"Meralco Digital",amount:3200,date:"2026-06-03",cat:"utilities",via:"GCash",earner:"Joint"}
+    ];
+    const INIT_BUDGETS = [
+      {id:"bg1",cat:"food",label:"Food & Groceries",icon:"🛒",limit:12000},
+      {id:"bg2",cat:"utilities",label:"Utilities",icon:"💡",limit:8000},
+      {id:"bg3",cat:"transport",label:"Transport / Fuel",icon:"🚗",limit:5000}
+    ];
+    const CASH_COLOR_PALETTE = ["#0D9E80", "#4F54D4", "#C97A0A", "#D94F4F", "#E879F9", "#38BDF8", "#34D399", "#FB923C", "#6B7280"];
+    const INIT_CASH_ACCOUNTS = [
+      {id:"ca_cash",name:"Cash",balance:0,color:"#0D9E80"},
+      {id:"ca_gcash",name:"GCash",balance:0,color:"#4F54D4"},
+      {id:"ca_bank_1",name:"Bank Account 1",balance:0,color:"#C97A0A"}
+    ];
+
+    // ─── STATE MANAGEMENT ───
+    let state = {
+      tab: "overview",
+      partnerNames: { you: "You", partner: "Partner" },
+      salaries: { you: 65000, partner: 52000 },
+      deductions: {
+        you: { sss: 0, phic: 0, hdmf: 0, tax: 0 },
+        partner: { sss: 0, phic: 0, hdmf: 0, tax: 0 }
+      },
+      incomeSources: [...INIT_SOURCES],
+      receivedIncome: [...INIT_RECEIVED],
+      expenses: [...INIT_EXPENSES],
+      cards: [...INIT_CARDS],
+      budgets: [...INIT_BUDGETS],
+      amortizations: [],
+      cashAccounts: INIT_CASH_ACCOUNTS.map(a => ({ ...a })),
+      ui: { txSearch: "", txType: "all", txCategory: "all", txMonth: "all", budgetMonth: "current" },
+      settings: { monthlySavingsTarget: 20000, cashOnHand: 0 }
+    };
+
+    let legacyCashOnHandNeedsMigration = false;
+    let legacyCashOnHandValue = 0;
+    if(localStorage.getItem("finance_tracker_state")) {
+      try {
+        const savedState = JSON.parse(localStorage.getItem("finance_tracker_state"));
+        legacyCashOnHandNeedsMigration = !Array.isArray(savedState.cashAccounts) && savedState.settings && (parseMoney(savedState.settings.cashOnHand) || 0) > 0;
+        legacyCashOnHandValue = Math.max(0, (parseMoney(savedState.settings && savedState.settings.cashOnHand) || 0));
+        state = { ...state, ...savedState };
+      } catch(e) { console.error("Error restoring state", e); }
+    }
+
+    if(!state.deductions) {
+      state.deductions = {
+        you: { sss: 0, phic: 0, hdmf: 0, tax: 0 },
+        partner: { sss: 0, phic: 0, hdmf: 0, tax: 0 }
+      };
+    }
+
+    if(!Array.isArray(state.amortizations)) state.amortizations = [];
+    if(!state.ui) state.ui = { txSearch: "", txType: "all", txCategory: "all", txMonth: "all", budgetMonth: "current" };
+    state.ui = { txSearch: "", txType: "all", txCategory: "all", txMonth: "all", budgetMonth: "current", ...state.ui };
+    if(!state.settings) state.settings = { monthlySavingsTarget: 20000, cashOnHand: 0 };
+    state.settings = { monthlySavingsTarget: 20000, cashOnHand: 0, ...state.settings };
+    if(!Array.isArray(state.cashAccounts) || state.cashAccounts.length === 0) {
+      state.cashAccounts = INIT_CASH_ACCOUNTS.map(a => ({ ...a }));
+    }
+    if(legacyCashOnHandNeedsMigration && legacyCashOnHandValue > 0 && !state.cashAccounts.some(a => a.id === "ca_legacy_cash_on_hand")) {
+      state.cashAccounts.push({ id:"ca_legacy_cash_on_hand", name:"Legacy Cash on Hand", balance:legacyCashOnHandValue, color:"#6B7280" });
+    }
+
+    function setStorageStatus(text, color = "#0D9E80") {
+      const statusEl = document.getElementById("storage-status");
+      if(!statusEl) return;
+      statusEl.innerText = text;
+      statusEl.style.color = color;
+    }
+
+    function saveState() {
+      localStorage.setItem("finance_tracker_state", JSON.stringify(state));
+      const statusEl = document.getElementById("storage-status");
+      if(statusEl) {
+        statusEl.innerText = cloudReady ? "Saving Local + Cloud..." : "Saving Locally...";
+        statusEl.classList.add("pulse");
+      }
+      scheduleCloudSave();
+      setTimeout(() => {
+        setStorageStatus(cloudReady ? "Saved Local + Cloud" : "Saved Locally");
+        if(statusEl) statusEl.classList.remove("pulse");
+      }, 600);
+      calculateAndRender();
+    }
+
+    // ─── FINANCIAL CALCULATORS ───
+    function parseMoney(value) {
+      if(typeof value === "number") return Number.isFinite(value) ? value : 0;
+      const raw = String(value ?? "").trim();
+      if(!raw) return 0;
+      const isParenNegative = /^\(.*\)$/.test(raw);
+      const cleaned = raw
+        .replace(/[₱,\s]/g, "")
+        .replace(/−/g, "-")
+        .replace(/[()]/g, "")
+        .replace(/[^0-9.\-]/g, "");
+      const n = Number(cleaned);
+      if(!Number.isFinite(n)) return 0;
+      return isParenNegative ? -Math.abs(n) : n;
+    }
+
+    const peso = (n, d=2) => {
+      const value = parseMoney(n);
+      return (value < 0 ? "−" : "") + "₱ " + Math.abs(value).toLocaleString("en-PH", { minimumFractionDigits:d, maximumFractionDigits:d });
+    };
+    const pesoF = n => peso(n, 2);
+    const moneyInputValue = value => pesoF(value);
+    function formatMoneyInput(el) { if(el) el.value = moneyInputValue(parseMoney(el.value)); }
+    function selectMoneyInput(el) { setTimeout(() => el && el.select(), 0); }
+
+    const today = () => new Date().toISOString().split("T")[0];
+    const pad2 = n => String(n).padStart(2, "0");
+    function parseDateInput(value) {
+      const raw = String(value ?? "").trim();
+      if(!raw) return "";
+      const iso = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if(iso) return `${iso[1]}-${iso[2]}-${iso[3]}`;
+      const us = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      if(us) {
+        const m = Number(us[1]);
+        const d = Number(us[2]);
+        const y = Number(us[3]);
+        const test = new Date(y, m - 1, d);
+        if(test.getFullYear() === y && test.getMonth() === m - 1 && test.getDate() === d) {
+          return `${y}-${pad2(m)}-${pad2(d)}`;
+        }
+      }
+      return "";
+    }
+    function toDateObject(value) {
+      if(value instanceof Date) return value;
+      const iso = parseDateInput(value);
+      return iso ? new Date(iso + "T00:00:00") : null;
+    }
+    function formatDateInputValue(value) {
+      const date = toDateObject(value);
+      return date ? `${pad2(date.getMonth() + 1)}/${pad2(date.getDate())}/${date.getFullYear()}` : "";
+    }
+    function formatDateInput(el) { if(el) el.value = formatDateInputValue(el.value) || el.value; }
+    function getCatInfo(v) {
+      if(isAmortizationCategory(v)) {
+        const item = getAmortizationByCategory(v);
+        return { v, l: item ? `Amortization: ${item.name}` : "Amortization", i:"🧾", isAmortization:true };
+      }
+      return CATS.find(c=>c.v===v) || {v, l:v, i:"📌"};
+    }
+
+    function computeIncomeAnalysis(salary, earnerKey) {
+      const additional = state.incomeSources
+        .filter(s => s.earner === earnerKey)
+        .reduce((sum, s) => sum + s.expectedAmt, 0);
+
+      const totalGross = salary + additional;
+      const d = state.deductions[earnerKey] || { sss: 0, phic: 0, hdmf: 0, tax: 0 };
+      
+      const totalDeductions = (d.sss || 0) + (d.phic || 0) + (d.hdmf || 0) + (d.tax || 0);
+      const net = totalGross - totalDeductions;
+
+      return { 
+        additional, 
+        totalGross, 
+        sss: d.sss || 0,
+        phic: d.phic || 0,
+        hdmf: d.hdmf || 0,
+        tax: d.tax || 0,
+        totalDeductions,
+        net: Math.round(net * 100) / 100 
+      };
+    }
+
+    // ─── APP CORE CONTROLLER ───
+    const TABS = [
+      {id:"overview", icon:"◈", label:"Overview"},
+      {id:"transactions", icon:"⇅", label:"Transactions"},
+      {id:"credit", icon:"💳", label:"Credit Cards"},
+      {id:"budget", icon:"⬡", label:"Budget Strategy"},
+      {id:"analysis", icon:"📊", label:"Income Analysis"}
+    ];
+
+    if(!TABS.some(t => t.id === state.tab)) state.tab = "overview";
+
+    function initNavigation() {
+      const nav = document.getElementById("sidebar-nav");
+      nav.innerHTML = TABS.map(t => `
+        <button class="nav-btn ${state.tab===t.id?'active':''}" onclick="switchTab('${t.id}')">
+          <span style="font-size:16px; width:20px; text-align:center; display:inline-block;">${t.icon}</span>${t.label}
+        </button>
+      `).join('');
+    }
+
+    function switchTab(tabId) {
+      state.tab = tabId;
+      initNavigation();
+      calculateAndRender();
+    }
+
+
+    // ─── UX + DATA HELPERS ───
+    const esc = value => String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[ch]));
+    const cleanMoney = value => Math.max(0, parseMoney(value) || 0);
+    const cleanHexColor = value => /^#[0-9A-Fa-f]{6}$/.test(String(value || "")) ? String(value).toUpperCase() : "#6B7280";
+    const getNextCashColor = () => CASH_COLOR_PALETTE[(state.cashAccounts || []).length % CASH_COLOR_PALETTE.length];
+    const getMonthKey = dateStr => { const iso = parseDateInput(dateStr); return iso ? iso.slice(0, 7) : ""; };
+    const formatMonth = key => {
+      if(!key || key === "all") return "All months";
+      const [y, m] = key.split("-").map(Number);
+      return new Date(y, m - 1, 1).toLocaleDateString("en-PH", { month: "short", year: "numeric" });
+    };
+    const AMORT_CAT_PREFIX = "amort:";
+    const amortizationCatId = id => `${AMORT_CAT_PREFIX}${id}`;
+    const isAmortizationCategory = cat => String(cat || "").startsWith(AMORT_CAT_PREFIX);
+    const getAmortizationIdFromCategory = cat => isAmortizationCategory(cat) ? String(cat).slice(AMORT_CAT_PREFIX.length) : "";
+    const getAmortizationById = id => (state.amortizations || []).find(item => item.id === id) || null;
+    const getAmortizationByCategory = cat => getAmortizationById(getAmortizationIdFromCategory(cat));
+    const getMonthDate = key => {
+      const [y, m] = String(key || getMonthKey(today())).split("-").map(Number);
+      return new Date(y || new Date().getFullYear(), (m || (new Date().getMonth() + 1)) - 1, 15);
+    };
+    const getMonthOptions = () => {
+      const keys = new Set([...state.receivedIncome, ...state.expenses].map(t => getMonthKey(t.date)).filter(Boolean));
+      keys.add(getMonthKey(today()));
+      return [...keys].sort().reverse();
+    };
+    const shiftMonthKey = (key, offset) => {
+      const [year, month] = String(key || getMonthKey(today())).split("-").map(Number);
+      const d = new Date(year || new Date().getFullYear(), (month || (new Date().getMonth() + 1)) - 1 + offset, 1);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    };
+    const getSelectedBudgetMonth = () => {
+      const selected = state.ui && state.ui.budgetMonth;
+      return selected && selected !== "current" ? selected : getMonthKey(today());
+    };
+    const getBudgetMonthOptions = () => {
+      const current = getMonthKey(today());
+      const previous = shiftMonthKey(current, -1);
+      const keys = new Set([current, previous, ...getMonthOptions()]);
+      if(Array.isArray(state.budgets)) {
+        state.budgets.forEach(b => Object.keys(b.monthlyLimits || {}).forEach(k => keys.add(k)));
+      }
+      return [...keys].filter(Boolean).sort().reverse();
+    };
+
+    function normalizeBudgets() {
+      state.budgets = (state.budgets || []).map((item, index) => {
+        const baseLimit = cleanMoney(item.limit);
+        const monthlyLimits = {};
+        const sourceLimits = item.monthlyLimits || item.monthLimits || {};
+        Object.keys(sourceLimits || {}).forEach(key => {
+          const monthKey = /^\d{4}-\d{2}$/.test(key) ? key : getMonthKey(key);
+          if(monthKey) monthlyLimits[monthKey] = cleanMoney(sourceLimits[key]);
+        });
+        return {
+          id: item.id || `bg_${Date.now()}_${index}`,
+          cat: item.cat || "other",
+          label: item.label || getCatInfo(item.cat || "other").l,
+          icon: item.icon || getCatInfo(item.cat || "other").i,
+          limit: baseLimit,
+          monthlyLimits
+        };
+      });
+    }
+
+    function getBudgetLimit(budget, monthKey = getSelectedBudgetMonth()) {
+      const key = monthKey && monthKey !== "current" ? monthKey : getMonthKey(today());
+      if(budget && budget.monthlyLimits && Object.prototype.hasOwnProperty.call(budget.monthlyLimits, key)) {
+        return parseMoney(budget.monthlyLimits[key]) || 0;
+      }
+      return parseMoney(budget && budget.limit) || 0;
+    }
+
+    function setBudgetLimitForMonth(id, monthKey, value) {
+      const key = monthKey && monthKey !== "current" ? monthKey : getMonthKey(today());
+      const limit = cleanMoney(value);
+      state.budgets = state.budgets.map(b => {
+        if(b.id !== id) return b;
+        const monthlyLimits = { ...(b.monthlyLimits || {}) };
+        monthlyLimits[key] = limit;
+        return { ...b, limit: parseMoney(b.limit) || limit, monthlyLimits };
+      });
+    }
+
+    function renderCategoryOptions(selectedValue = "") {
+      const selected = String(selectedValue || "");
+      const regularOptions = CATS.map(c => `<option value="${c.v}" ${selected === c.v ? "selected" : ""}>${c.i} ${esc(c.l)}</option>`).join('');
+      const amortOptions = (state.amortizations || []).map(item => {
+        const value = amortizationCatId(item.id);
+        const status = getAmortizationDueInfo(item);
+        return `<option value="${esc(value)}" ${selected === value ? "selected" : ""}>🧾 ${esc(item.name)} · due ${peso(status.due)} · remaining ${peso(status.remaining)}</option>`;
+      }).join('');
+      return regularOptions + (amortOptions ? `<optgroup label="Amortization Schedule">${amortOptions}</optgroup>` : '');
+    }
+
+    function normalizeCashAccounts() {
+      state.cashAccounts = (state.cashAccounts || []).map((item, index) => ({
+        id: item.id || `ca_${Date.now()}_${index}`,
+        name: String(item.name || `Cash Item ${index + 1}`).trim() || `Cash Item ${index + 1}`,
+        balance: cleanMoney(item.balance),
+        color: cleanHexColor(item.color || CASH_COLOR_PALETTE[index % CASH_COLOR_PALETTE.length])
+      }));
+      if(state.cashAccounts.length === 0) state.cashAccounts = INIT_CASH_ACCOUNTS.map(a => ({ ...a }));
+    }
+
+    normalizeBudgets();
+    normalizeCashAccounts();
+    normalizeAmortizations();
+    normalizeTransactionPaymentSources();
+
+    function isCashOnHandSource(tx) {
+      const source = getTransactionPaymentSource(tx);
+      return source && source.type === "cash" && !!getCashAccountById(source.id);
+    }
+
+    function isCardSource(tx) {
+      const source = getTransactionPaymentSource(tx);
+      return source && source.type === "card";
+    }
+
+    function isOtherSource(tx) {
+      const source = getTransactionPaymentSource(tx);
+      return !source || (source.type !== "cash" && source.type !== "card");
+    }
+
+    function sumTxAmounts(rows) {
+      return (rows || []).reduce((sum, item) => sum + (parseMoney(item.amount) || 0), 0);
+    }
+
+    function getCashOnHandFormulaParts() {
+      const cashIncomeRows = (state.receivedIncome || []).filter(isCashOnHandSource);
+      const cashExpenseRows = (state.expenses || []).filter(isCashOnHandSource);
+      const cardExpenseRows = (state.expenses || []).filter(isCardSource);
+      const otherIncomeRows = (state.receivedIncome || []).filter(isOtherSource);
+      const otherExpenseRows = (state.expenses || []).filter(isOtherSource);
+
+      const cashIncome = sumTxAmounts(cashIncomeRows);
+      const cashExpenses = sumTxAmounts(cashExpenseRows);
+      const cardExpenses = sumTxAmounts(cardExpenseRows);
+      const otherIncome = sumTxAmounts(otherIncomeRows);
+      const otherExpenses = sumTxAmounts(otherExpenseRows);
+
+      return {
+        cashIncome,
+        cashExpenses,
+        cardExpenses,
+        otherIncome,
+        otherExpenses,
+        cashIncomeRows,
+        cashExpenseRows,
+        cardExpenseRows,
+        otherIncomeRows,
+        otherExpenseRows,
+        total: Math.round((cashIncome - cashExpenses) * 100) / 100
+      };
+    }
+
+    function getCashOnHandTotal() {
+      return getCashOnHandFormulaParts().total;
+    }
+
+    function getCashAccountActivity(account) {
+      const incomeRows = (state.receivedIncome || []).filter(tx => {
+        const source = getTransactionPaymentSource(tx);
+        return source && source.type === "cash" && source.id === account.id;
+      });
+      const expenseRows = (state.expenses || []).filter(tx => {
+        const source = getTransactionPaymentSource(tx);
+        return source && source.type === "cash" && source.id === account.id;
+      });
+      const inflows = sumTxAmounts(incomeRows);
+      const outflows = sumTxAmounts(expenseRows);
+      return {
+        inflows,
+        outflows,
+        incomeCount: incomeRows.length,
+        expenseCount: expenseRows.length,
+        net: Math.round((inflows - outflows) * 100) / 100
+      };
+    }
+
+    function addMonths(date, months) {
+      const clone = new Date(date.getFullYear(), date.getMonth(), 1);
+      clone.setMonth(clone.getMonth() + months);
+      return clone;
+    }
+
+    function monthIndex(date) {
+      return date.getFullYear() * 12 + date.getMonth();
+    }
+
+    function getAmortizationStatus(item, refDate = new Date()) {
+      const termMonths = Math.max(1, parseInt(item.termMonths) || 1);
+      const monthlyAmount = cleanMoney(item.monthlyAmount);
+      const start = new Date((parseDateInput(item.startDate) || today()) + "T00:00:00");
+      const finish = addMonths(start, termMonths - 1);
+      const currentMonthNo = monthIndex(refDate) - monthIndex(start) + 1;
+      const active = currentMonthNo >= 1 && currentMonthNo <= termMonths;
+      const beforeStart = currentMonthNo < 1;
+      const completed = currentMonthNo > termMonths;
+      const displayMonth = beforeStart ? 0 : Math.min(currentMonthNo, termMonths);
+      const remainingMonths = beforeStart ? termMonths : Math.max(0, termMonths - displayMonth);
+      return {
+        termMonths,
+        monthlyAmount,
+        start,
+        finish,
+        active,
+        completed,
+        currentMonthNo: displayMonth,
+        remainingMonths,
+        finishLabel: formatDateLabel(finish),
+        statusLabel: completed ? "Finished" : (beforeStart ? "Not started" : `Month ${displayMonth} of ${termMonths}`)
+      };
+    }
+
+    function normalizeAmortizations() {
+      state.amortizations = (state.amortizations || []).map((item, index) => ({
+        id: item.id || `am_${Date.now()}_${index}`,
+        name: String(item.name || `Amortization ${index + 1}`).trim() || `Amortization ${index + 1}`,
+        cat: item.cat || item.parentCat || (state.budgets[0] && state.budgets[0].cat) || "other",
+        monthlyAmount: cleanMoney(item.monthlyAmount),
+        startDate: item.startDate || today(),
+        termMonths: Math.max(1, parseInt(item.termMonths) || 1)
+      }));
+    }
+
+    function getBudgetExpenseMetrics(monthKey = null) {
+      const metrics = {};
+      (state.expenses || [])
+        .filter(e => !isAmortizationCategory(e.cat))
+        .filter(e => !monthKey || getMonthKey(e.date) === monthKey)
+        .forEach(e => metrics[e.cat] = (metrics[e.cat] || 0) + (parseMoney(e.amount) || 0));
+      return metrics;
+    }
+
+    function getActualExpenseTotalForCategory(cat, monthKey = null) {
+      return (state.expenses || [])
+        .filter(e => e.cat === cat)
+        .filter(e => !monthKey || getMonthKey(e.date) === monthKey)
+        .reduce((sum, e) => sum + (parseMoney(e.amount) || 0), 0);
+    }
+
+    function getAmortizationPaymentTotal(item, monthKey = getMonthKey(today())) {
+      const catId = amortizationCatId(item.id);
+      return (state.expenses || [])
+        .filter(e => e.cat === catId && getMonthKey(e.date) === monthKey)
+        .reduce((sum, e) => sum + (parseMoney(e.amount) || 0), 0);
+    }
+
+    function getAmortizationDueInfo(item, monthKey = getMonthKey(today())) {
+      const status = getAmortizationStatus(item, getMonthDate(monthKey));
+      const due = status.active ? status.monthlyAmount : 0;
+      const paid = getAmortizationPaymentTotal(item, monthKey);
+      const remaining = Math.max(0, due - paid);
+      const overpaid = Math.max(0, paid - due);
+      return { ...status, due, paid, remaining, overpaid, monthKey };
+    }
+
+    function getAmortizationBudgetTotals(monthKey = getMonthKey(today())) {
+      return (state.amortizations || []).reduce((acc, item) => {
+        const info = getAmortizationDueInfo(item, monthKey);
+        acc.due += info.due;
+        acc.paid += info.paid;
+        acc.remaining += info.remaining;
+        return acc;
+      }, { due:0, paid:0, remaining:0 });
+    }
+
+    function renderAmortizationSection(monthKey = getMonthKey(today())) {
+      const rows = (state.amortizations || []).map(item => {
+        const info = getAmortizationDueInfo(item, monthKey);
+        const parentCat = CATS.find(c => c.v === item.cat) || {i:"📌", l:"Other"};
+        const statusColor = info.completed ? "#0D9E80" : (info.active ? "#4F54D4" : "#C97A0A");
+        return `
+          <div class="amortization-row">
+            <div>
+              <div class="amort-title">${esc(item.name)}</div>
+              <div class="amort-sub">Budget group: ${parentCat.i} ${esc(parentCat.l)} · Transaction category: 🧾 ${esc(item.name)}</div>
+              <div class="amort-sub">Starts ${esc(formatDateLabel(item.startDate))} · finishes ${esc(info.finishLabel)}</div>
+            </div>
+            <div class="amort-due-card">
+              <div class="mini-stat-label">Due this month</div>
+              <div class="amort-value" style="color:#D94F4F; text-align:left; margin-top:3px;">${peso(info.due)}</div>
+            </div>
+            <div class="amort-due-card">
+              <div class="mini-stat-label">Paid</div>
+              <div class="amort-value" style="color:#0D9E80; text-align:left; margin-top:3px;">${peso(info.paid)}</div>
+            </div>
+            <div class="amort-due-card">
+              <div class="mini-stat-label">Remaining</div>
+              <div class="amort-value" style="color:${info.remaining > 0 ? '#D94F4F' : '#0D9E80'}; text-align:left; margin-top:3px;">${peso(info.remaining)}</div>
+            </div>
+            <div class="amort-value" style="color:${statusColor};">${esc(info.statusLabel)}</div>
+            <button class="btn btn-ghost btn-small" onclick="deleteAmortization('${item.id}')">Remove</button>
+          </div>
+        `;
+      }).join('');
+      const totals = getAmortizationBudgetTotals(monthKey);
+      return `
+        <div class="card amortization-section">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:8px;">
+            <div>
+              <h3 style="font-size:15px; font-weight:800; letter-spacing:-0.01em;">Amortization Schedule</h3>
+              <p style="font-size:12px; color:#78716C; font-weight:500; margin-top:3px;">Each amortization appears as its own expense category when logging payments. This month's unpaid dues are added to Overview's Remaining Total Budget.</p>
+            </div>
+            <button class="btn btn-primary" onclick="openModal('addAmortization')">+ Add Amortization</button>
+          </div>
+          <div class="grid-3" style="margin:14px 0 12px;">
+            <div class="mini-stat"><div class="mini-stat-label">Amortization Due</div><div class="mini-stat-value" style="color:#D94F4F;">${peso(totals.due)}</div></div>
+            <div class="mini-stat"><div class="mini-stat-label">Logged Payments</div><div class="mini-stat-value" style="color:#0D9E80;">${peso(totals.paid)}</div></div>
+            <div class="mini-stat"><div class="mini-stat-label">Unpaid Due</div><div class="mini-stat-value" style="color:${totals.remaining > 0 ? '#D94F4F' : '#0D9E80'};">${peso(totals.remaining)}</div></div>
+          </div>
+          <div class="amortization-list">
+            ${rows || '<div class="empty-state">No amortization items yet. Add car, phone, appliance, or loan payments here.</div>'}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderCashAccountsHTML(mode = "full") {
+      const rows = (state.cashAccounts || []).map(item => {
+        const color = cleanHexColor(item.color);
+        const activity = getCashAccountActivity(item);
+        return `
+          <div class="cash-balance-line">
+            <input type="text" class="form-input" value="${esc(item.name)}" onchange="updateCashAccountField('${item.id}', 'name', this.value)" placeholder="Cash label" style="border-left:5px solid ${color}; font-weight:800;" />
+            <div class="cash-balance-pill" style="color:${activity.net >= 0 ? '#0D9E80' : '#D94F4F'};">${peso(activity.net)}</div>
+            <div style="display:flex; gap:7px; align-items:center; justify-content:flex-end;">
+              <input type="color" class="cash-color-input" value="${color}" onchange="updateCashAccountField('${item.id}', 'color', this.value)" title="Cash color" />
+              <button class="btn btn-ghost btn-small" onclick="deleteCashAccount('${item.id}')" title="Remove item">Remove</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      return `
+        <div class="cash-account-list" style="gap:7px;">
+          ${rows || '<div class="empty-state">No Cash on Hand labels yet.</div>'}
+        </div>
+      `;
+    }
+
+    function getPaymentMethodOptions() {
+      return (state.cashAccounts || [])
+        .filter(a => String(a.name || "").trim())
+        .map(a => ({
+          id: a.id,
+          name: String(a.name || "").trim(),
+          balance: getCashAccountActivity(a).net,
+          color: cleanHexColor(a.color)
+        }));
+    }
+
+    function renderPaymentMethodOptions(includeCreditCards = false, selectedValue = "") {
+      const selected = String(selectedValue || "");
+      const cashOptions = getPaymentMethodOptions()
+        .map(a => {
+          const value = 'cash:' + a.id;
+          return '<option value="' + esc(value) + '" ' + (selected === value ? 'selected' : '') + '>' + esc(a.name) + ' · ' + peso(a.balance) + '</option>';
+        })
+        .join('');
+      const cardOptions = includeCreditCards
+        ? (state.cards || []).map(c => {
+          const value = 'card:' + c.id;
+          return '<option value="' + esc(value) + '" ' + (selected === value ? 'selected' : '') + '>' + esc(c.name) + '</option>';
+        }).join('')
+        : '';
+      const cashGroup = cashOptions
+        ? '<optgroup label="Cash on Hand">' + cashOptions + '</optgroup>'
+        : '<option value="" disabled>No Cash on Hand items yet</option>';
+      const cardGroup = cardOptions ? '<optgroup label="Credit Cards">' + cardOptions + '</optgroup>' : '';
+      return cashGroup + cardGroup;
+    }
+
+    function getPaymentSourceSelectValue(tx) {
+      const source = getTransactionPaymentSource(tx);
+      return source && source.id ? `${source.type}:${source.id}` : "";
+    }
+
+    function getTransactionSourceVisual(tx) {
+      const source = getTransactionPaymentSource(tx);
+      if(source && source.type === "cash") {
+        const account = getCashAccountById(source.id);
+        return { typeLabel: "Cash on Hand", name: source.name, color: account ? cleanHexColor(account.color) : "#0D9E80" };
+      }
+      if(source && source.type === "card") {
+        const card = getCardById(source.id);
+        return { typeLabel: "Credit Card", name: source.name, color: card && card.color ? card.color : "#4F54D4" };
+      }
+      return { typeLabel: "Other / Legacy", name: source ? source.name : (tx.via || "Unassigned"), color: "#6B7280" };
+    }
+
+    function renderTransactionSourceBadge(tx) {
+      const visual = getTransactionSourceVisual(tx);
+      return `
+        <div class="tx-source-badge" style="border-left-color:${esc(visual.color)};">
+          <div class="tx-source-type">${esc(visual.typeLabel)}</div>
+          <div class="tx-source-name">${esc(visual.name || "Unassigned")}</div>
+        </div>
+      `;
+    }
+
+    function getCashAccountById(id) {
+      return (state.cashAccounts || []).find(a => a.id === id) || null;
+    }
+
+    function getCardById(id) {
+      return (state.cards || []).find(c => c.id === id) || null;
+    }
+
+    function findUniqueCashAccountByName(name) {
+      const matches = (state.cashAccounts || []).filter(a => String(a.name || "").trim() === String(name || "").trim());
+      return matches.length === 1 ? matches[0] : null;
+    }
+
+    function findUniqueCardByName(name) {
+      const matches = (state.cards || []).filter(c => String(c.name || "").trim() === String(name || "").trim());
+      return matches.length === 1 ? matches[0] : null;
+    }
+
+    function parsePaymentSource(rawValue) {
+      const raw = String(rawValue || "");
+      if(raw.startsWith("cash:")) {
+        const id = raw.slice(5);
+        const account = getCashAccountById(id);
+        return account ? { type: "cash", id, name: account.name } : null;
+      }
+      if(raw.startsWith("card:")) {
+        const id = raw.slice(5);
+        const card = getCardById(id);
+        return card ? { type: "card", id, name: card.name } : null;
+      }
+      const cash = findUniqueCashAccountByName(raw);
+      if(cash) return { type: "cash", id: cash.id, name: cash.name };
+      const card = findUniqueCardByName(raw);
+      if(card) return { type: "card", id: card.id, name: card.name };
+      return raw ? { type: "manual", id: "", name: raw } : null;
+    }
+
+    function getTransactionPaymentSource(tx) {
+      if(tx && tx.paymentSourceType === "cash" && tx.paymentSourceId) {
+        const account = getCashAccountById(tx.paymentSourceId);
+        if(account) return { type: "cash", id: tx.paymentSourceId, name: account.name };
+        return tx.via ? { type: "manual", id: "", name: tx.via } : null;
+      }
+      if(tx && tx.paymentSourceType === "card" && tx.paymentSourceId) {
+        const card = getCardById(tx.paymentSourceId);
+        return card ? { type: "card", id: tx.paymentSourceId, name: card.name } : (tx.via ? { type: "manual", id: "", name: tx.via } : null);
+      }
+      return parsePaymentSource(tx && tx.via);
+    }
+
+    function adjustCashAccountBalance(id, delta) {
+      // Cash on Hand is derived from logged income and cash-routed expenses.
+      // This no-op preserves compatibility with older transaction mutation paths.
+      return;
+    }
+
+    function getMetrics() {
+      const totalIncome = sumTxAmounts(state.receivedIncome || []);
+      const totalExpenses = sumTxAmounts(state.expenses || []);
+      const cashFormula = getCashOnHandFormulaParts();
+      const cashIncome = cashFormula.cashIncome;
+      const cashExpenses = cashFormula.cashExpenses;
+      const netCash = cashFormula.total;
+      const savingsRate = cashIncome > 0 ? Math.round((netCash / cashIncome) * 100) : 0;
+      const currentMonth = getMonthKey(today());
+      const expenseMetrics = getBudgetExpenseMetrics(currentMonth);
+      const topCatKey = Object.keys(expenseMetrics).sort((a,b) => expenseMetrics[b] - expenseMetrics[a])[0];
+      const topCat = topCatKey ? { ...getCatInfo(topCatKey), amount: expenseMetrics[topCatKey] } : null;
+      const breachedBudgets = state.budgets.filter(b => (expenseMetrics[b.cat] || 0) > getBudgetLimit(b, currentMonth));
+      const targetGap = (state.settings.monthlySavingsTarget || 0) - netCash;
+      return { totalIncome, totalExpenses, cashIncome, cashExpenses, netCash, savingsRate, expenseMetrics, topCat, breachedBudgets, targetGap };
+    }
+
+    function getHeadroomComponents(ccCharges) {
+      const currentMonth = getMonthKey(today());
+      const receivedThisMonth = state.receivedIncome.filter(i => getMonthKey(i.date) === currentMonth);
+      const salaryReceivedThisMonth = receivedThisMonth
+        .filter(i => (i.type || 'salary') === 'salary')
+        .reduce((sum, i) => sum + (parseMoney(i.amount) || 0), 0);
+      const additionalReceivedThisMonth = receivedThisMonth
+        .filter(i => (i.type || 'salary') !== 'salary')
+        .reduce((sum, i) => sum + (parseMoney(i.amount) || 0), 0);
+
+      const deductionTotal = ['you','partner'].reduce((sum, key) => {
+        const d = state.deductions[key] || {};
+        return sum + (parseMoney(d.sss) || 0) + (parseMoney(d.phic) || 0) + (parseMoney(d.hdmf) || 0) + (parseMoney(d.tax) || 0);
+      }, 0);
+
+      const expectedSalaryNet = Math.max(0, (parseMoney(state.salaries.you) || 0) + (parseMoney(state.salaries.partner) || 0) - deductionTotal);
+      const salaryToReceive = Math.max(0, expectedSalaryNet - salaryReceivedThisMonth);
+
+      const expectedAdditionalIncome = state.incomeSources.reduce((sum, s) => sum + (parseMoney(s.expectedAmt) || 0), 0);
+      const additionalIncomeToReceive = Math.max(0, expectedAdditionalIncome - additionalReceivedThisMonth);
+
+      const spentByCategory = getBudgetExpenseMetrics(currentMonth);
+      const standardRemainingBudget = state.budgets.reduce((sum, b) => {
+        const spent = spentByCategory[b.cat] || 0;
+        return sum + Math.max(0, getBudgetLimit(b, currentMonth) - spent);
+      }, 0);
+      const amortizationBudget = getAmortizationBudgetTotals(currentMonth);
+      const remainingTotalBudget = standardRemainingBudget + amortizationBudget.remaining;
+
+      const creditCardTotalAmount = state.cards.reduce((sum, c) => {
+        const currentCycleCharges = ccCharges[c.id] || 0;
+        return sum + (parseMoney(c.outstandingBalance) || 0) + currentCycleCharges;
+      }, 0);
+
+      const cashOnHand = getCashOnHandTotal();
+      const householdHeadroom = cashOnHand + salaryToReceive + additionalIncomeToReceive - remainingTotalBudget - creditCardTotalAmount;
+
+      return {
+        currentMonth,
+        cashOnHand,
+        expectedSalaryNet,
+        salaryReceivedThisMonth,
+        salaryToReceive,
+        expectedAdditionalIncome,
+        additionalReceivedThisMonth,
+        additionalIncomeToReceive,
+        standardRemainingBudget,
+        amortizationDueThisMonth: amortizationBudget.due,
+        amortizationPaidThisMonth: amortizationBudget.paid,
+        amortizationRemainingThisMonth: amortizationBudget.remaining,
+        remainingTotalBudget,
+        creditCardTotalAmount,
+        householdHeadroom
+      };
+    }
+
+    function getFilteredTransactions() {
+      const q = (state.ui.txSearch || "").toLowerCase().trim();
+      const type = state.ui.txType || "all";
+      const cat = state.ui.txCategory || "all";
+      const month = state.ui.txMonth || "all";
+      const rows = [
+        ...state.receivedIncome.map(i => ({ ...i, rowType: "income", cat: "income" })),
+        ...state.expenses.map(e => ({ ...e, rowType: "expense" }))
+      ];
+      return rows
+        .filter(row => type === "all" || row.rowType === type)
+        .filter(row => cat === "all" || row.cat === cat)
+        .filter(row => month === "all" || getMonthKey(row.date) === month)
+        .filter(row => {
+          if(!q) return true;
+          const catInfo = row.rowType === "income" ? { l: (row.type || "salary") === "salary" ? "Salary Income" : "Additional Income" } : getCatInfo(row.cat);
+          const source = getTransactionSourceVisual(row);
+          return [row.desc, row.via, row.earner, row.cat, catInfo.l, source.typeLabel, source.name].some(v => String(v || "").toLowerCase().includes(q));
+        })
+        .sort((a,b) => (b.date || "").localeCompare(a.date || ""));
+    }
+
+    function setTxFilter(field, value) {
+      state.ui[field] = value;
+      calculateAndRender();
+    }
+
+    function clearTxFilters() {
+      state.ui = { ...state.ui, txSearch: "", txType: "all", txCategory: "all", txMonth: "all" };
+      calculateAndRender();
+    }
+
+    function setBudgetMonth(value) {
+      state.ui.budgetMonth = value || "current";
+      calculateAndRender();
+    }
+
+    function getCardDueInfo(day) {
+      const now = new Date();
+      const normalizedDay = Math.min(Math.max(parseInt(day) || 25, 1), 31);
+      const due = new Date(now.getFullYear(), now.getMonth(), normalizedDay);
+      if(due < new Date(now.getFullYear(), now.getMonth(), now.getDate())) due.setMonth(due.getMonth() + 1);
+      const days = Math.ceil((due - now) / 86400000);
+      const dateLabel = formatDateLabel(due);
+      return { days, dateLabel, date: due, label: days === 0 ? "Due today" : `Due in ${days} day${days === 1 ? "" : "s"}` };
+    }
+
+    function getCardBreakdown(ccCharges = {}) {
+      return (state.cards || []).map(c => {
+        const currentCycleCharges = parseMoney(ccCharges[c.id]) || 0;
+        const outstanding = parseMoney(c.outstandingBalance) || 0;
+        const total = outstanding + currentCycleCharges;
+        const dueInfo = getCardDueInfo(c.dueDay || 25);
+        return { ...c, outstanding, currentCycleCharges, total, dueInfo };
+      }).sort((a, b) => a.dueInfo.days - b.dueInfo.days);
+    }
+
+    function getNearestDueCard(ccCharges = {}) {
+      const cards = getCardBreakdown(ccCharges);
+      if(cards.length === 0) return null;
+      const cardsWithAmount = cards.filter(card => card.total > 0);
+      return (cardsWithAmount.length ? cardsWithAmount : cards)[0];
+    }
+
+
+    function clampStatementDate(year, monthIndex, day) {
+      const normalizedDay = Math.min(Math.max(parseInt(day) || 25, 1), 31);
+      const lastDay = new Date(year, monthIndex + 1, 0).getDate();
+      return new Date(year, monthIndex, Math.min(normalizedDay, lastDay));
+    }
+
+    function addDays(date, days) {
+      const clone = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      clone.setDate(clone.getDate() + days);
+      return clone;
+    }
+
+    function formatDateLabel(date) {
+      const d = toDateObject(date);
+      return d ? `${pad2(d.getMonth() + 1)}/${pad2(d.getDate())}/${d.getFullYear()}` : "";
+    }
+
+    function formatISODate(date) {
+      return date.toISOString().split("T")[0];
+    }
+
+    function getDueDateForStatement(card, statementDate) {
+      let due = clampStatementDate(statementDate.getFullYear(), statementDate.getMonth(), card.dueDay || 25);
+      if(due <= statementDate) due = clampStatementDate(statementDate.getFullYear(), statementDate.getMonth() + 1, card.dueDay || 25);
+      return due;
+    }
+
+    function getStatementCycleForDate(card, dateStr) {
+      const txDate = new Date((parseDateInput(dateStr) || today()) + "T00:00:00");
+      let statementDate = clampStatementDate(txDate.getFullYear(), txDate.getMonth(), card.cutDay || 25);
+      if(txDate > statementDate) statementDate = clampStatementDate(txDate.getFullYear(), txDate.getMonth() + 1, card.cutDay || 25);
+      const previousStatementDate = clampStatementDate(statementDate.getFullYear(), statementDate.getMonth() - 1, card.cutDay || 25);
+      const cycleStart = addDays(previousStatementDate, 1);
+      const dueDate = getDueDateForStatement(card, statementDate);
+      const now = new Date();
+      const todayDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const daysToDue = Math.ceil((dueDate - todayDate) / 86400000);
+      let status = "Open statement cycle";
+      if(todayDate > dueDate) status = "Past due based on due date";
+      else if(todayDate > statementDate) status = daysToDue === 0 ? "Due today" : `Closed statement · due in ${daysToDue} day${daysToDue === 1 ? "" : "s"}`;
+      return {
+        key: formatISODate(statementDate),
+        cycleStart,
+        statementDate,
+        dueDate,
+        daysToDue,
+        status,
+        cycleLabel: `${formatDateLabel(cycleStart)} – ${formatDateLabel(statementDate)}`,
+        statementLabel: formatDateLabel(statementDate),
+        dueLabel: formatDateLabel(dueDate)
+      };
+    }
+
+    function getCardExpenseRows(card) {
+      return (state.expenses || [])
+        .filter(e => {
+          const source = getTransactionPaymentSource(e);
+          return source && source.type === "card" && source.id === card.id;
+        })
+        .map(e => ({ ...e, cycle: getStatementCycleForDate(card, e.date), categoryInfo: getCatInfo(e.cat) }))
+        .sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+    }
+
+    function getCardSoaGroups(card) {
+      const groups = {};
+      getCardExpenseRows(card).forEach(row => {
+        if(!groups[row.cycle.key]) groups[row.cycle.key] = { cycle: row.cycle, rows: [], total: 0 };
+        groups[row.cycle.key].rows.push(row);
+        groups[row.cycle.key].total += parseMoney(row.amount) || 0;
+      });
+      return Object.values(groups).sort((a, b) => b.cycle.statementDate - a.cycle.statementDate);
+    }
+
+    function openCardSoa(cardId) {
+      const card = getCardById(cardId);
+      if(!card) return;
+      const modal = document.getElementById("modal-container");
+      const groups = getCardSoaGroups(card);
+      const currentCycle = getStatementCycleForDate(card, today());
+      const manualOutstanding = parseMoney(card.outstandingBalance) || 0;
+      const itemizedTotal = groups.reduce((sum, group) => sum + group.total, 0);
+      const totalOwed = manualOutstanding + itemizedTotal;
+      const currentGroup = groups.find(group => group.cycle.key === currentCycle.key);
+      const groupRows = groups.map(group => `
+        <div class="card" style="padding:16px; border-color:${group.cycle.status.includes('Past') ? '#D94F4F55' : (group.cycle.key === currentCycle.key ? '#0D9E8055' : '#DDD8CE')};">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:14px; margin-bottom:10px;">
+            <div>
+              <div style="font-family:'Plus Jakarta Sans'; font-weight:800; font-size:14px; letter-spacing:-0.01em;">Statement ${esc(group.cycle.statementLabel)}</div>
+              <div style="font-size:11px; color:#78716C; font-weight:600; margin-top:2px;">Cycle ${esc(group.cycle.cycleLabel)} · Due ${esc(group.cycle.dueLabel)}</div>
+              <div style="font-size:10px; color:${group.cycle.status.includes('Past') ? '#D94F4F' : '#78716C'}; font-weight:800; text-transform:uppercase; letter-spacing:.05em; margin-top:4px;">${esc(group.cycle.status)}</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:10px; color:#78716C; font-weight:800; text-transform:uppercase; letter-spacing:.05em;">SOA Amount</div>
+              <div style="font-family:'Plus Jakarta Sans'; font-weight:800; font-size:20px; color:#D94F4F; margin-top:3px;">${peso(group.total)}</div>
+            </div>
+          </div>
+          <div class="breakdown-list" style="margin-top:10px;">
+            ${group.rows.map(row => `
+              <div class="breakdown-row">
+                <div>
+                  <div class="breakdown-row-title">${esc(row.desc)}</div>
+                  <div class="breakdown-row-sub">${esc(formatDateInputValue(row.date))} · ${esc(row.categoryInfo.i)} ${esc(row.categoryInfo.l)}</div>
+                </div>
+                <div class="breakdown-row-amount" style="color:#D94F4F;">${peso(row.amount)}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('');
+
+      modal.style.display = "flex";
+      modal.className = "modal-backdrop";
+      modal.innerHTML = `
+        <div class="modal-content" style="max-width:820px;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:14px; margin-bottom:14px;">
+            <div>
+              <h3 style="margin-bottom:4px; font-weight:800; letter-spacing:-0.01em;">${esc(card.name)} Statement of Account</h3>
+              <p style="font-size:12px; color:#78716C; line-height:1.5; font-weight:500;">SOA groups card-paid expenses by statement cutoff day and computes each statement due date from the card due day.</p>
+            </div>
+            <button onclick="closeModal()" style="background:none; border:none; color:#78716C; cursor:pointer; font-size:20px; line-height:1;">×</button>
+          </div>
+
+          <div class="grid-3" style="margin-bottom:14px;">
+            <div class="mini-stat">
+              <div class="mini-stat-label">Current Open Cycle</div>
+              <div class="mini-stat-value" style="font-size:16px; color:#1C1917;">${esc(currentCycle.cycleLabel)}</div>
+              <div style="font-size:11px; color:#78716C; font-weight:600; margin-top:4px;">Statement ${esc(currentCycle.statementLabel)} · Due ${esc(currentCycle.dueLabel)}</div>
+            </div>
+            <div class="mini-stat">
+              <div class="mini-stat-label">Current Cycle Charges</div>
+              <div class="mini-stat-value" style="color:#D94F4F;">${peso(currentGroup ? currentGroup.total : 0)}</div>
+              <div style="font-size:11px; color:#78716C; font-weight:600; margin-top:4px;">Card-paid expenses in the open cycle</div>
+            </div>
+            <div class="mini-stat">
+              <div class="mini-stat-label">Total Card Amount</div>
+              <div class="mini-stat-value" style="color:#D94F4F;">${peso(totalOwed)}</div>
+              <div style="font-size:11px; color:#78716C; font-weight:600; margin-top:4px;">Manual outstanding + itemized card expenses</div>
+            </div>
+          </div>
+
+          ${manualOutstanding > 0 ? `
+            <div class="breakdown-row" style="border-color:#D94F4F44; margin-bottom:12px;">
+              <div>
+                <div class="breakdown-row-title">Manual Outstanding Balance</div>
+                <div class="breakdown-row-sub">Existing card balance carried in the card profile. It is shown separately because it is not itemized into an SOA cycle.</div>
+              </div>
+              <div class="breakdown-row-amount" style="color:#D94F4F;">${peso(manualOutstanding)}</div>
+            </div>
+          ` : ''}
+
+          <div class="breakdown-list">
+            ${groupRows || '<div class="empty-state">No expenses have been logged to this card yet.</div>'}
+          </div>
+          <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px;">
+            <button class="btn btn-ghost" onclick="closeModal()">Close</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderHeadroomButton(label, amount, direction, detailType, hint) {
+      const numericAmount = parseMoney(amount);
+      const color = direction === "out" || numericAmount < 0 ? "#D94F4F" : "#0D9E80";
+      const sign = direction === "out" ? "−" : (numericAmount < 0 ? "" : "+");
+      return `
+        <button class="headroom-detail-btn" onclick="openHeadroomDetail('${detailType}')" title="Show ${esc(label)} breakdown">
+          <div class="headroom-detail-label">${esc(label)}</div>
+          <div class="headroom-detail-value" style="color:${color};">${sign}${peso(numericAmount)}</div>
+          <div class="headroom-detail-hint">${esc(hint || 'Tap to view breakdown')}</div>
+        </button>
+      `;
+    }
+
+    function getCcCharges() {
+      const ccCharges = {};
+      state.cards.forEach(c => ccCharges[c.id] = 0);
+      state.expenses.forEach(e => {
+        const source = getTransactionPaymentSource(e);
+        if(source && source.type === "card" && ccCharges[source.id] !== undefined) {
+          ccCharges[source.id] += parseMoney(e.amount) || 0;
+        }
+      });
+      return ccCharges;
+    }
+
+    function openHeadroomDetail(type) {
+      const modal = document.getElementById("modal-container");
+      const ccCharges = getCcCharges();
+      const headroom = getHeadroomComponents(ccCharges);
+      const currentMonthLabel = formatMonth(headroom.currentMonth);
+      let title = "Headroom Detail";
+      let subtitle = "";
+      let body = "";
+      let footer = "";
+
+      if(type === "cash") {
+        title = "Cash on Hand Total";
+        subtitle = "SUMIF-style total of transactions whose payment source matches a Cash on Hand label.";
+        body = `
+          <div class="mini-stat" style="margin-top:14px;">
+            <div class="mini-stat-label">Total Cash on Hand</div>
+            <div class="mini-stat-value" style="color:${headroom.cashOnHand >= 0 ? '#0D9E80' : '#D94F4F'};">${peso(headroom.cashOnHand)}</div>
+            <div style="font-size:11px; color:#78716C; font-weight:500; margin-top:3px;">Computed from transactions matched to the Cash on Hand labels below.</div>
+          </div>
+          ${renderCashAccountsHTML("compact")}
+        `;
+        footer = `<button class="btn btn-primary" onclick="openModal('addCashAccount')">+ Add Cash Label</button>`;
+      }
+
+      else if(type === "salary") {
+        title = "Salary to Receive";
+        subtitle = `Expected net salary still unlogged for ${currentMonthLabel}.`;
+        const salaryRows = ["you", "partner"].map(key => {
+          const d = state.deductions[key] || {};
+          const gross = parseMoney(state.salaries[key]) || 0;
+          const deductions = (parseMoney(d.sss) || 0) + (parseMoney(d.phic) || 0) + (parseMoney(d.hdmf) || 0) + (parseMoney(d.tax) || 0);
+          const net = Math.max(0, gross - deductions);
+          const name = key === "you" ? state.partnerNames.you : state.partnerNames.partner;
+          return `
+            <div class="breakdown-row">
+              <div>
+                <div class="breakdown-row-title">${esc(name)}</div>
+                <div class="breakdown-row-sub">Gross ${peso(gross)} − deductions ${peso(deductions)}</div>
+              </div>
+              <div class="breakdown-row-amount" style="color:#0D9E80;">${peso(net)}</div>
+            </div>
+          `;
+        }).join("");
+        const salaryReceivedRows = state.receivedIncome
+          .filter(i => getMonthKey(i.date) === headroom.currentMonth && (i.type || "salary") === "salary")
+          .map(i => `
+            <div class="breakdown-row">
+              <div>
+                <div class="breakdown-row-title">${esc(i.desc)}</div>
+                <div class="breakdown-row-sub">${esc(formatDateInputValue(i.date))} · ${esc(i.earner || "Salary")} · via ${esc(i.via || "N/A")}</div>
+              </div>
+              <div class="breakdown-row-amount" style="color:#4F54D4;">${peso(i.amount)}</div>
+            </div>
+          `).join("");
+        body = `
+          <div class="breakdown-list">
+            <div class="mini-stat">
+              <div class="mini-stat-label">Expected Net Salary</div>
+              <div class="mini-stat-value" style="color:#0D9E80;">${peso(headroom.expectedSalaryNet)}</div>
+            </div>
+            ${salaryRows}
+            <div class="breakdown-row">
+              <div>
+                <div class="breakdown-row-title">Salary already logged this month</div>
+                <div class="breakdown-row-sub">Logged salary income for ${currentMonthLabel}</div>
+              </div>
+              <div class="breakdown-row-amount" style="color:#D94F4F;">−${peso(headroom.salaryReceivedThisMonth)}</div>
+            </div>
+            ${salaryReceivedRows || '<div class="empty-state">No salary receipts logged for this month yet.</div>'}
+            <div class="breakdown-row" style="border-color:#0D9E8055;">
+              <div>
+                <div class="breakdown-row-title">Remaining Salary to Receive</div>
+                <div class="breakdown-row-sub">Expected net salary less salary already logged</div>
+              </div>
+              <div class="breakdown-row-amount" style="color:#0D9E80;">${peso(headroom.salaryToReceive)}</div>
+            </div>
+          </div>
+        `;
+      }
+
+      else if(type === "additional") {
+        title = "Additional Income to Receive";
+        subtitle = `Expected additional income streams still unlogged for ${currentMonthLabel}.`;
+        const expectedRows = state.incomeSources.map(source => `
+          <div class="breakdown-row">
+            <div>
+              <div class="breakdown-row-title">${esc(source.desc)}</div>
+              <div class="breakdown-row-sub">Assigned to ${source.earner === "you" ? esc(state.partnerNames.you) : esc(state.partnerNames.partner)}</div>
+            </div>
+            <div class="breakdown-row-amount" style="color:#0D9E80;">${peso(source.expectedAmt)}</div>
+          </div>
+        `).join("");
+        const loggedRows = state.receivedIncome
+          .filter(i => getMonthKey(i.date) === headroom.currentMonth && (i.type || "salary") !== "salary")
+          .map(i => `
+            <div class="breakdown-row">
+              <div>
+                <div class="breakdown-row-title">${esc(i.desc)}</div>
+                <div class="breakdown-row-sub">${esc(formatDateInputValue(i.date))} · ${esc(i.earner || "Additional")} · via ${esc(i.via || "N/A")}</div>
+              </div>
+              <div class="breakdown-row-amount" style="color:#4F54D4;">${peso(i.amount)}</div>
+            </div>
+          `).join("");
+        body = `
+          <div class="breakdown-list">
+            <div class="mini-stat">
+              <div class="mini-stat-label">Expected Additional Income</div>
+              <div class="mini-stat-value" style="color:#0D9E80;">${peso(headroom.expectedAdditionalIncome)}</div>
+            </div>
+            ${expectedRows || '<div class="empty-state">No expected additional income streams mapped yet.</div>'}
+            <div class="breakdown-row">
+              <div>
+                <div class="breakdown-row-title">Additional income already logged this month</div>
+                <div class="breakdown-row-sub">Logged additional income for ${currentMonthLabel}</div>
+              </div>
+              <div class="breakdown-row-amount" style="color:#D94F4F;">−${peso(headroom.additionalReceivedThisMonth)}</div>
+            </div>
+            ${loggedRows || '<div class="empty-state">No additional income receipts logged for this month yet.</div>'}
+            <div class="breakdown-row" style="border-color:#0D9E8055;">
+              <div>
+                <div class="breakdown-row-title">Remaining Additional Income to Receive</div>
+                <div class="breakdown-row-sub">Expected streams less additional income already logged</div>
+              </div>
+              <div class="breakdown-row-amount" style="color:#0D9E80;">${peso(headroom.additionalIncomeToReceive)}</div>
+            </div>
+          </div>
+        `;
+      }
+
+      else if(type === "budget") {
+        title = "Remaining Total Budget";
+        subtitle = "Unused regular budgets plus unpaid amortization dues for the current month.";
+        const spentByCategory = getBudgetExpenseMetrics();
+        const budgetRows = state.budgets.map(b => {
+          const actualSpent = getActualExpenseTotalForCategory(b.cat);
+          const spent = spentByCategory[b.cat] || 0;
+          const limit = getBudgetLimit(b, headroom.currentMonth);
+          const remaining = Math.max(0, limit - spent);
+          const overBy = Math.max(0, spent - limit);
+          return `
+            <div class="breakdown-row">
+              <div>
+                <div class="breakdown-row-title">${esc(b.icon || "📌")} ${esc(b.label)}</div>
+                <div class="breakdown-row-sub">${formatMonth(headroom.currentMonth)} budget cap ${peso(limit)} · logged spend ${peso(actualSpent)}${overBy > 0 ? ` · over by ${peso(overBy)}` : ""}</div>
+              </div>
+              <div class="breakdown-row-amount" style="color:${overBy > 0 ? "#D94F4F" : "#0D9E80"};">${peso(remaining)}</div>
+            </div>
+          `;
+        }).join("");
+        const amortRows = (state.amortizations || []).map(item => {
+          const info = getAmortizationDueInfo(item, headroom.currentMonth);
+          if(info.due <= 0 && info.paid <= 0) return "";
+          return `
+            <div class="breakdown-row">
+              <div>
+                <div class="breakdown-row-title">🧾 ${esc(item.name)}</div>
+                <div class="breakdown-row-sub">Due ${peso(info.due)} · paid ${peso(info.paid)} · ${esc(info.statusLabel)}</div>
+              </div>
+              <div class="breakdown-row-amount" style="color:${info.remaining > 0 ? "#D94F4F" : "#0D9E80"};">${peso(info.remaining)}</div>
+            </div>
+          `;
+        }).join("");
+        body = `
+          <div class="grid-3" style="margin-top:14px; margin-bottom:0;">
+            <div class="mini-stat"><div class="mini-stat-label">Regular Budget Remaining</div><div class="mini-stat-value" style="color:#D94F4F;">${peso(headroom.standardRemainingBudget)}</div></div>
+            <div class="mini-stat"><div class="mini-stat-label">Amortization Unpaid Due</div><div class="mini-stat-value" style="color:#D94F4F;">${peso(headroom.amortizationRemainingThisMonth)}</div></div>
+            <div class="mini-stat"><div class="mini-stat-label">Remaining Total Budget</div><div class="mini-stat-value" style="color:#D94F4F;">${peso(headroom.remainingTotalBudget)}</div></div>
+          </div>
+          <div class="breakdown-list">${budgetRows || '<div class="empty-state">No budget caps established yet.</div>'}${amortRows}</div>
+        `;
+      }
+
+      else if(type === "credit") {
+        title = "Credit Card Total Amount";
+        subtitle = "Outstanding balances plus current card-paid expenses.";
+        const nearest = getNearestDueCard(ccCharges);
+        const rows = getCardBreakdown(ccCharges).map(card => {
+          const nearestTag = nearest && nearest.id === card.id ? '<span class="tag" style="background:#C97A0A22; color:#C97A0A; margin-left:6px;">Nearest Due</span>' : '';
+          return `
+            <div class="breakdown-row" style="border-color:${nearest && nearest.id === card.id ? "#C97A0A66" : "#DDD8CE"};">
+              <div>
+                <div class="breakdown-row-title">${esc(card.name)} ${nearestTag}</div>
+                <div class="breakdown-row-sub">${esc(card.bank || "Issuer")} · ${esc(card.dueInfo.label)} · ${esc(card.dueInfo.dateLabel)}</div>
+                <div class="breakdown-row-sub">Outstanding ${peso(card.outstanding)} + card-paid expenses ${peso(card.currentCycleCharges)}</div>
+              </div>
+              <div class="breakdown-row-amount" style="color:#D94F4F;">${peso(card.total)}</div>
+            </div>
+          `;
+        }).join("");
+        body = `
+          <div class="mini-stat" style="margin-top:14px;">
+            <div class="mini-stat-label">Credit Card Total Amount</div>
+            <div class="mini-stat-value" style="color:#D94F4F;">${peso(headroom.creditCardTotalAmount)}</div>
+            <div style="font-size:11px; color:#78716C; font-weight:500; margin-top:3px;">This is subtracted from headroom.</div>
+          </div>
+          ${nearest ? `
+            <div class="breakdown-row" style="border-color:#C97A0A66; margin-top:12px;">
+              <div>
+                <div class="breakdown-row-title">Nearest due card: ${esc(nearest.name)}</div>
+                <div class="breakdown-row-sub">${esc(nearest.dueInfo.label)} · ${esc(nearest.dueInfo.dateLabel)}</div>
+              </div>
+              <div class="breakdown-row-amount" style="color:#D94F4F;">${peso(nearest.total)}</div>
+            </div>
+          ` : ""}
+          <div class="breakdown-list">${rows || '<div class="empty-state">No credit cards added yet.</div>'}</div>
+        `;
+      }
+
+      if(!body) return;
+      modal.style.display = "flex";
+      modal.className = "modal-backdrop";
+      modal.innerHTML = `
+        <div class="modal-content" style="max-width:620px;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:14px; margin-bottom:12px;">
+            <div>
+              <h3 style="margin-bottom:4px; font-weight:800; letter-spacing:-0.01em;">${esc(title)}</h3>
+              <p style="font-size:12px; color:#78716C; line-height:1.5; font-weight:500;">${esc(subtitle)}</p>
+            </div>
+            <button onclick="closeModal()" style="background:none; border:none; color:#78716C; cursor:pointer; font-size:20px; line-height:1;">×</button>
+          </div>
+          ${body}
+          <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px;">
+            ${footer}
+            <button class="btn btn-ghost" onclick="closeModal()">Close</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function buildSmartAlerts(metrics, availableCredit, headroom) {
+      const alerts = [];
+      if(headroom.householdHeadroom < 0) alerts.push({ icon:"🚨", title:"Negative household headroom", body:`Your formula-based headroom is short by ${peso(Math.abs(headroom.householdHeadroom))}. Review cash on hand, remaining budget, or credit card balances.` });
+      if(metrics.netCash < 0) alerts.push({ icon:"🚨", title:"Negative cash position", body:`Expenses exceed logged income by ${peso(Math.abs(metrics.netCash))}. Review discretionary spending or add missing income entries.` });
+      if(metrics.breachedBudgets.length) alerts.push({ icon:"⚠️", title:`${metrics.breachedBudgets.length} budget cap${metrics.breachedBudgets.length > 1 ? "s" : ""} breached`, body:metrics.breachedBudgets.slice(0,2).map(b => `${b.icon} ${b.label}`).join(" · ") + " need attention." });
+      if(metrics.targetGap > 0) alerts.push({ icon:"🎯", title:"Savings target gap", body:`You are ${peso(metrics.targetGap)} below your monthly savings target of ${peso(state.settings.monthlySavingsTarget)}.` });
+      if(availableCredit < 10000) alerts.push({ icon:"💳", title:"Low credit headroom", body:`Available calculated card headroom is ${peso(availableCredit)}. Consider reducing card-funded transactions this cycle.` });
+      if(metrics.savingsRate >= 20) alerts.push({ icon:"✅", title:"Healthy savings rate", body:`Cash on Hand is ${metrics.savingsRate}% of cash-routed income, above the common 20% target reference.` });
+      if(alerts.length === 0) alerts.push({ icon:"🟢", title:"No urgent exceptions", body:"Your current logged data does not show budget breaches, negative cash, or target gaps." });
+      return alerts;
+    }
+
+    function updateSavingsTarget(value) {
+      state.settings.monthlySavingsTarget = cleanMoney(value);
+      saveState();
+    }
+
+    function updateCashAccountField(id, field, value) {
+      state.cashAccounts = (state.cashAccounts || []).map(item => {
+        if(item.id !== id) return item;
+        if(field === "balance") return item;
+        if(field === "name") {
+          const name = String(value || "").trim();
+          return { ...item, name: name || item.name };
+        }
+        if(field === "color") return { ...item, color: cleanHexColor(value) };
+        return item;
+      });
+      saveState();
+    }
+
+    function deleteCashAccount(id) {
+      if((state.cashAccounts || []).length <= 1) {
+        alert("Keep at least one Cash on Hand item so the total can still be computed.");
+        return;
+      }
+      if(!confirm("Remove this item from Cash on Hand?")) return;
+      state.cashAccounts = state.cashAccounts.filter(item => item.id !== id);
+      saveState();
+    }
+
+
+    function normalizeTransactionPaymentSources() {
+      state.receivedIncome = (state.receivedIncome || []).map(tx => {
+        if(tx.paymentSourceType && tx.paymentSourceId) return tx;
+        const source = parsePaymentSource(tx.via);
+        return source && source.type === "cash" ? { ...tx, via: source.name, paymentSourceType: source.type, paymentSourceId: source.id } : tx;
+      });
+      state.expenses = (state.expenses || []).map(tx => {
+        if(tx.paymentSourceType && tx.paymentSourceId) return tx;
+        const source = parsePaymentSource(tx.via);
+        return source && (source.type === "cash" || source.type === "card") ? { ...tx, via: source.name, paymentSourceType: source.type, paymentSourceId: source.id } : tx;
+      });
+    }
+
+    function exportData() {
+      const payload = JSON.stringify({ ...state, exportedAt: new Date().toISOString() }, null, 2);
+      const blob = new Blob([payload], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `finance-tracker-backup-${today()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importData(event) {
+      const file = event.target.files && event.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const imported = JSON.parse(reader.result);
+          state = { ...state, ...imported };
+          delete state.exportedAt;
+          normalizeCashAccounts();
+          normalizeTransactionPaymentSources();
+          saveState();
+          alert("Backup imported successfully.");
+        } catch(e) {
+          alert("Import failed. Please select a valid Finance Tracker JSON backup.");
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = "";
+    }
+
+    function resetToDemoData() {
+      if(!confirm("Reset this browser's Finance Tracker data to the original demo data?")) return;
+      localStorage.removeItem("finance_tracker_state");
+      location.reload();
+    }
+
+    // ─── RENDERING LAYER ───
+    function calculateAndRender() {
+      const totalIncome = sumTxAmounts(state.receivedIncome || []);
+      const totalExpenses = sumTxAmounts(state.expenses || []);
+      const cashFormula = getCashOnHandFormulaParts();
+      const netCash = cashFormula.total;
+      
+      const ccCharges = getCcCharges();
+      const availableCredit = state.cards.reduce((s,c) => s + Math.max(0, c.limit - c.outstandingBalance - (ccCharges[c.id] || 0)), 0);
+      const headroom = getHeadroomComponents(ccCharges);
+      const totalHeadroom = headroom.householdHeadroom;
+      const metrics = getMetrics();
+      const smartAlerts = buildSmartAlerts(metrics, availableCredit, headroom);
+      
+      const analysisYou = computeIncomeAnalysis(state.salaries.you, 'you');
+      const analysisPartner = computeIncomeAnalysis(state.salaries.partner, 'partner');
+      const combinedNetTakeHome = analysisYou.net + analysisPartner.net;
+      const expectedMonthlyIncome = combinedNetTakeHome + state.incomeSources.reduce((sum, s) => sum + parseMoney(s.expectedAmt), 0);
+
+      const netCashEl = document.getElementById("sidebar-net-cash");
+      netCashEl.innerText = peso(netCash);
+      netCashEl.style.color = netCash >= 0 ? "#0D9E80" : "#D94F4F";
+
+      const main = document.getElementById("main-content");
+      
+      if(state.tab === "overview") {
+        main.innerHTML = `
+          <div style="margin-bottom: 28px;">
+            <h1 style="font-weight: 800; font-size: 28px; letter-spacing: -0.02em; margin-bottom:4px;">Good day, ${esc(state.partnerNames.you)} & ${esc(state.partnerNames.partner)} 💑</h1>
+            <p style="color: #78716C; font-size: 13px; font-weight: 500;">Household overall financial framework snapshot</p>
+          </div>
+
+          <div class="grid-3">
+            <div class="card">
+              <div style="font-size:10px; color:#78716C; text-transform:uppercase; font-weight:700; letter-spacing:0.03em;">Combined Income Logged</div>
+              <div style="font-weight:800; font-size:25px; color:#0D9E80; margin:6px 0; letter-spacing:-0.02em;">${peso(totalIncome)}</div>
+              <div style="font-size:11px; color:#78716C; font-weight:500;">${state.receivedIncome.length} positions recorded</div>
+            </div>
+            <div class="card">
+              <div style="font-size:10px; color:#78716C; text-transform:uppercase; font-weight:700; letter-spacing:0.03em;">Total Dynamic Expenses</div>
+              <div style="font-weight:800; font-size:25px; color:#D94F4F; margin:6px 0; letter-spacing:-0.02em;">${peso(totalExpenses)}</div>
+              <div style="font-size:11px; color:#78716C; font-weight:500;">${state.expenses.length} transaction entries</div>
+            </div>
+            <div class="card">
+              <div style="font-size:10px; color:#78716C; text-transform:uppercase; font-weight:700; letter-spacing:0.03em;">Calculated Net Take-Home</div>
+              <div style="font-weight:800; font-size:25px; color:#4F54D4; margin:6px 0; letter-spacing:-0.02em;">${peso(combinedNetTakeHome)}</div>
+              <div style="font-size:11px; color:#78716C; font-weight:500;">Combined base + custom parameters</div>
+            </div>
+          </div>
+
+          <div class="card" style="display:flex; justify-content:space-between; align-items:center; background:linear-gradient(to right, #FDFAF5, #F5EFE4); margin-bottom:24px; padding:24px; border-color:#C8C2B6;">
+            <div>
+              <div style="font-size:11px; font-weight:700; color:#7A736A; letter-spacing:.08em; margin-bottom:6px; font-family:'Plus Jakarta Sans';">💡 HOUSEHOLD FINANCIAL HEADROOM</div>
+              <div style="font-weight:800; font-size:38px; color:${totalHeadroom>0?'#0D9E80':'#D94F4F'}; letter-spacing:-0.03em;">${peso(totalHeadroom)}</div>
+              <div style="font-size:12px; color:#78716C; margin-top:4px; font-weight:500;">Cash on hand + income still to receive − remaining budgets − total card amount</div>
+              <div class="headroom-detail-grid">
+                ${renderHeadroomButton('Cash on Hand Total', headroom.cashOnHand, 'in', 'cash', `matched cash income − matched cash expenses`)}
+                ${renderHeadroomButton('Salary to Receive', headroom.salaryToReceive, 'in', 'salary', `${formatMonth(headroom.currentMonth)} salary breakdown`)}
+                ${renderHeadroomButton('Additional Income to Receive', headroom.additionalIncomeToReceive, 'in', 'additional', 'Expected streams less logged receipts')}
+                ${renderHeadroomButton('Remaining Total Budget', headroom.remainingTotalBudget, 'out', 'budget', 'Unused budget caps')}
+                ${renderHeadroomButton('Credit Card Total Amount', headroom.creditCardTotalAmount, 'out', 'credit', 'Owed amount by card')}
+              </div>
+            </div>
+            <div style="min-width:160px; text-align:right;">
+              ${totalHeadroom > 50000 ? '<span class="tag" style="background:#0D9E8022; color:#0D9E80;">✅ HEALTHY BUFFER CAPACITY</span>' : 
+                (totalHeadroom > 0 ? '<span class="tag" style="background:#C97A0A22; color:#C97A0A;">⚠️ WATCH VOLATILITY</span>' : 
+                '<span class="tag" style="background:#D94F4F22; color:#D94F4F;">🚨 NEGATIVE EXPOSURE RISK</span>')}
+            </div>
+          </div>
+
+          <div class="grid-3">
+            <div class="mini-stat">
+              <div class="mini-stat-label">Savings Rate</div>
+              <div class="mini-stat-value" style="color:${metrics.savingsRate >= 20 ? '#0D9E80' : '#C97A0A'};">${metrics.savingsRate}%</div>
+              <div style="font-size:11px; color:#78716C; font-weight:500; margin-top:3px;">Cash on Hand divided by cash-routed income</div>
+            </div>
+            <div class="mini-stat">
+              <div class="mini-stat-label">Top Spend Category</div>
+              <div class="mini-stat-value" style="color:${metrics.topCat ? (CAT_COLORS[metrics.topCat.v] || '#4F54D4') : '#78716C'};">${metrics.topCat ? `${metrics.topCat.i} ${peso(metrics.topCat.amount)}` : '—'}</div>
+              <div style="font-size:11px; color:#78716C; font-weight:500; margin-top:3px;">${metrics.topCat ? esc(metrics.topCat.l) : 'No expenses logged yet'}</div>
+            </div>
+            <div class="mini-stat">
+              <div class="mini-stat-label">Monthly Savings Target</div>
+              <div class="mini-stat-value" style="color:${metrics.targetGap <= 0 ? '#0D9E80' : '#D94F4F'};">${metrics.targetGap <= 0 ? 'Met' : peso(metrics.targetGap)}</div>
+              <div style="font-size:11px; color:#78716C; font-weight:500; margin-top:3px;">Target: ${peso(state.settings.monthlySavingsTarget || 0)}</div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom:24px;">
+            <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start; margin-bottom:14px;">
+              <div>
+                <div style="font-size:12px; font-weight:800; color:#7A736A; text-transform:uppercase; font-family:'Plus Jakarta Sans'; letter-spacing:0.04em;">Smart Alerts</div>
+                <p style="font-size:12px; color:#78716C; margin-top:3px; font-weight:500;">Exception-based notes from your currently logged data.</p>
+              </div>
+              <button class="btn btn-ghost btn-small" onclick="openModal('savingsTarget')">Adjust Target</button>
+            </div>
+            <div class="alert-panel">
+              ${smartAlerts.map(a => `
+                <div class="alert-item">
+                  <div style="font-size:18px; line-height:1;">${a.icon}</div>
+                  <div><strong>${esc(a.title)}</strong><p>${esc(a.body)}</p></div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="card">
+              <div style="font-size:12px; font-weight:700; color:#7A736A; text-transform:uppercase; margin-bottom:14px; font-family:'Plus Jakarta Sans'; letter-spacing:0.02em;">Cash on Hand Breakdown</div>
+              <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #EDE8DE;">
+                <span style="font-size:13px; color:#78716C; font-weight:500;">Matched Cash Account Income</span>
+                <span style="font-size:14px; font-weight:700; color:#0D9E80;">+${peso(cashFormula.cashIncome)}</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #EDE8DE;">
+                <span style="font-size:13px; color:#78716C; font-weight:500;">Matched Cash Account Expenses</span>
+                <span style="font-size:14px; font-weight:700; color:#D94F4F;">−${peso(cashFormula.cashExpenses)}</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; padding:14px 0 2px; font-weight:800; font-family:'Plus Jakarta Sans';">
+                <span style="font-size:14px;">Computed Cash on Hand</span>
+                <span style="font-size:16px; color:${netCash >= 0 ? '#0D9E80':'#D94F4F'};">${peso(netCash)}</span>
+              </div>
+            </div>
+
+            <div class="card">
+              <div style="font-size:12px; font-weight:700; color:#7A736A; text-transform:uppercase; margin-bottom:14px; font-family:'Plus Jakarta Sans'; letter-spacing:0.02em;">Active Budget Caps At-A-Glance</div>
+              <div style="max-height:170px; overflow-y:auto; display:grid; gap:8px;">
+                ${state.budgets.length === 0 ? '<div style="font-size:13px; color:#78716C; padding:12px 0; font-weight:500;">No parameters established under Budget Strategy yet.</div>' : 
+                  state.budgets.slice(0, 3).map(b => {
+                    const limit = getBudgetLimit(b, getMonthKey(today()));
+                    const budgetIncomePct = expectedMonthlyIncome > 0 ? ((limit / expectedMonthlyIncome) * 100).toFixed(2) : "0.00";
+                    return `
+                      <div style="display:flex; justify-content:space-between; align-items:center; background:#EDE8DE44; padding:10px 14px; border-radius:10px; border:1px solid #DDD8CE;">
+                        <span style="font-size:13px; font-weight:600;">${b.icon} ${b.label}</span>
+                        <div style="text-align:right;">
+                          <div style="font-size:14px; font-weight:800; color:#1C1917;">${peso(limit)}</div>
+                          <div style="font-size:10px; color:#78716C; font-weight:600;">${budgetIncomePct}% of total income</div>
+                        </div>
+                      </div>
+                    `;
+                  }).join('')}
+              </div>
+            </div>
+          </div>
+        `;
+      } 
+      
+      else if(state.tab === "transactions") {
+        const filteredRows = getFilteredTransactions();
+        const filteredIncome = filteredRows.filter(r => r.rowType === "income").reduce((sum, r) => sum + (parseMoney(r.amount) || 0), 0);
+        const filteredExpenses = filteredRows.filter(r => r.rowType === "expense").reduce((sum, r) => sum + (parseMoney(r.amount) || 0), 0);
+        const filteredNet = filteredIncome - filteredExpenses;
+        const months = getMonthOptions();
+
+        main.innerHTML = `
+          <div class="toolbar">
+            <div>
+              <h1 style="font-weight: 800; font-size: 26px; letter-spacing: -0.02em;">Transaction Center</h1>
+              <p style="color:#78716C; font-size:13px; font-weight:500;">Search, filter, and manage income, cash expenses, card expenses, and other routed transactions in one place.</p>
+            </div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <button class="btn btn-ghost" onclick="openModal('addIncome')">+ Log Income</button>
+              <button class="btn btn-primary" onclick="openModal('addExpense')">+ Log Expense</button>
+            </div>
+          </div>
+
+          <div class="filter-row">
+            <input type="text" class="form-input" placeholder="Search description, payment method, owner..." value="${esc(state.ui.txSearch)}" oninput="setTxFilter('txSearch', this.value)" />
+            <select class="form-input" onchange="setTxFilter('txType', this.value)">
+              <option value="all" ${state.ui.txType === 'all' ? 'selected' : ''}>All types</option>
+              <option value="income" ${state.ui.txType === 'income' ? 'selected' : ''}>Income only</option>
+              <option value="expense" ${state.ui.txType === 'expense' ? 'selected' : ''}>Expenses only</option>
+            </select>
+            <select class="form-input" onchange="setTxFilter('txCategory', this.value)">
+              <option value="all" ${state.ui.txCategory === 'all' ? 'selected' : ''}>All categories</option>
+              ${renderCategoryOptions(state.ui.txCategory)}
+            </select>
+            <select class="form-input" onchange="setTxFilter('txMonth', this.value)">
+              <option value="all" ${state.ui.txMonth === 'all' ? 'selected' : ''}>All months</option>
+              ${months.map(m => `<option value="${m}" ${state.ui.txMonth === m ? 'selected' : ''}>${formatMonth(m)}</option>`).join('')}
+            </select>
+            <button class="btn btn-ghost" onclick="clearTxFilters()">Clear</button>
+          </div>
+
+          <div class="grid-3">
+            <div class="mini-stat">
+              <div class="mini-stat-label">Filtered Income</div>
+              <div class="mini-stat-value" style="color:#0D9E80;">${peso(filteredIncome)}</div>
+            </div>
+            <div class="mini-stat">
+              <div class="mini-stat-label">Filtered Expenses</div>
+              <div class="mini-stat-value" style="color:#D94F4F;">${peso(filteredExpenses)}</div>
+            </div>
+            <div class="mini-stat">
+              <div class="mini-stat-label">Filtered Net</div>
+              <div class="mini-stat-value" style="color:${filteredNet >= 0 ? '#0D9E80' : '#D94F4F'};">${peso(filteredNet)}</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:14px;">
+              <h3 style="font-size:13px; color:#1C1917; text-transform:uppercase; letter-spacing:.05em;">Ledger Results</h3>
+              <span class="tag" style="background:#6B728018; color:#1C1917;">${filteredRows.length} entries</span>
+            </div>
+
+            <div class="tx-ledger-wrap">
+              <div class="tx-ledger">
+                <div class="tx-ledger-header">
+                  <div>Date</div>
+                  <div>Category</div>
+                  <div>Description</div>
+                  <div>Cash / Credit Account</div>
+                  <div style="text-align:right;">Amount</div>
+                  <div style="text-align:right;">Actions</div>
+                </div>
+                ${filteredRows.length === 0 ? '<div class="empty-state">No transactions match the current filters.</div>' : filteredRows.map(row => {
+                  const isIncome = row.rowType === "income";
+                  const cInfo = isIncome ? {i:"↗", l:(row.type || "salary") === "salary" ? "Salary Income" : "Additional Income"} : getCatInfo(row.cat);
+                  const color = isIncome ? "#0D9E80" : "#D94F4F";
+                  const deleteAction = isIncome ? `deleteIncome('${row.id}')` : `deleteExpense('${row.id}')`;
+                  const dateObj = new Date((parseDateInput(row.date) || today()) + "T00:00:00");
+                  return `
+                    <div class="tx-row">
+                      <div>
+                        <div class="tx-date-main">${esc(formatDateInputValue(row.date))}</div>
+                        <div class="tx-date-sub">${esc(dateObj.toLocaleDateString("en-PH", { weekday:"short" }))}</div>
+                      </div>
+                      <div class="tx-category-chip"><span>${cInfo.i}</span><span>${esc(cInfo.l)}</span></div>
+                      <div style="min-width:0;">
+                        <div class="tx-desc-main">${esc(row.desc)}</div>
+                        <div class="tx-desc-sub">${esc(row.earner || (isIncome ? 'Income' : 'Joint'))}</div>
+                      </div>
+                      ${renderTransactionSourceBadge(row)}
+                      <div class="tx-amount" style="color:${color};">${isIncome ? '+' : '−'}${peso(row.amount)}</div>
+                      <div class="tx-actions">
+                        <button class="btn btn-ghost btn-small" onclick="openEditTransaction('${row.rowType}', '${row.id}')">Edit</button>
+                        <button class="btn btn-ghost btn-small" onclick="${deleteAction}" title="Delete entry">Remove</button>
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+          </div>
+        `;
+      } 
+      
+      else if(state.tab === "credit") {
+        const nearestDueCard = getNearestDueCard(ccCharges);
+        main.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+            <div>
+              <h1 style="font-weight: 800; font-size: 26px; letter-spacing: -0.02em;">Credit Card Exposures</h1>
+              <p style="color:#78716C; font-size:13px; font-weight:500;">Current calculated dynamic line availability: <strong style="color:#4F54D4; font-weight:700;">${peso(availableCredit)}</strong></p>
+            </div>
+            <button class="btn btn-primary" onclick="openModal('addCard')">+ Add Credit Instrument</button>
+          </div>
+
+          ${nearestDueCard ? `
+            <div class="card nearest-due-banner">
+              <div>
+                <div style="font-size:10px; color:#C97A0A; text-transform:uppercase; letter-spacing:.08em; font-family:'Plus Jakarta Sans'; font-weight:800; margin-bottom:4px;">Nearest Card Due Fully</div>
+                <div style="font-family:'Plus Jakarta Sans'; font-weight:800; font-size:21px; letter-spacing:-0.02em;">${esc(nearestDueCard.name)}</div>
+                <div style="font-size:12px; color:#78716C; font-weight:600; margin-top:3px;">${esc(nearestDueCard.bank || 'Issuer')} · ${esc(nearestDueCard.dueInfo.label)} · ${esc(nearestDueCard.dueInfo.dateLabel)}</div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-size:10px; color:#78716C; text-transform:uppercase; letter-spacing:.05em; font-family:'Plus Jakarta Sans'; font-weight:800;">Amount to prepare</div>
+                <div style="font-family:'Plus Jakarta Sans'; font-weight:800; font-size:24px; color:#D94F4F; margin-top:4px;">${peso(nearestDueCard.total)}</div>
+                <div style="font-size:11px; color:#78716C; font-weight:500; margin-top:3px;">Outstanding + current card-paid expenses</div>
+              </div>
+            </div>
+          ` : ''}
+
+          <div class="grid-2">
+            ${state.cards.map(c => {
+              const currentCycleCharges = ccCharges[c.id] || 0;
+              const totalUsed = c.outstandingBalance + currentCycleCharges;
+              const utilizationPct = c.limit > 0 ? Math.min(Math.round((totalUsed / c.limit) * 100), 100) : 0;
+              const dueInfo = getCardDueInfo(c.dueDay || 25);
+              const isNearestDue = nearestDueCard && nearestDueCard.id === c.id;
+              
+              return `
+                <div class="card" style="border-top: 4px solid ${c.color || '#6B7280'};">
+                  <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px;">
+                    <div>
+                      <h4 style="font-size:15px; font-weight:800; letter-spacing:-0.01em;">${esc(c.name)} ${isNearestDue ? '<span class="tag" style="background:#C97A0A22; color:#C97A0A; margin-left:6px; vertical-align:middle;">Nearest Due</span>' : ''}</h4>
+                      <span style="font-size:11px; color:#78716C; font-weight:600; text-transform:uppercase; letter-spacing:0.02em;">${esc(c.bank || 'Institutional Issuer')}</span>
+                    </div>
+                    <button onclick="deleteCard('${c.id}')" style="background:none; border:none; color:#C8C2B6; cursor:pointer; font-size:16px;">×</button>
+                  </div>
+                  
+                  <div style="margin-bottom:14px;">
+                    <div style="display:flex; justify-content:space-between; font-size:11px; color:#78716C; font-weight:600; margin-bottom:5px;">
+                      <span>Utilization Profile</span>
+                      <span>${utilizationPct}%</span>
+                    </div>
+                    <div style="height:6px; background:#DDD8CE; border-radius:3px; overflow:hidden;">
+                      <div style="width:${utilizationPct}%; height:100%; background:${c.color || '#6B7280'}; border-radius:3px;"></div>
+                    </div>
+                  </div>
+
+                  <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; background:#EDE8DE44; padding:12px; border-radius:10px; font-size:12px;">
+                    <div>
+                      <span style="color:#78716C; display:block; font-size:10px; text-transform:uppercase; font-weight:700; letter-spacing:0.02em; margin-bottom:2px;">Aggregate Limit</span>
+                      <strong style="font-size:14px; font-weight:800;">${peso(c.limit)}</strong>
+                    </div>
+                    <div>
+                      <span style="color:#78716C; display:block; font-size:10px; text-transform:uppercase; font-weight:700; letter-spacing:0.02em; margin-bottom:2px;">Calculated Owed</span>
+                      <strong style="font-size:14px; font-weight:800; color:#D94F4F;">${peso(totalUsed)}</strong>
+                    </div>
+                    <div>
+                      <span style="color:#78716C; display:block; font-size:10px; text-transform:uppercase; font-weight:700; letter-spacing:0.02em; margin-bottom:2px;">Statement Cutoff</span>
+                      <span style="font-weight:600; color:#1C1917;">Day ${c.cutDay}</span>
+                    </div>
+                    <div>
+                      <span style="color:#78716C; display:block; font-size:10px; text-transform:uppercase; font-weight:700; letter-spacing:0.02em; margin-bottom:2px;">Due Horizon</span>
+                      <span style="font-weight:600; color:#1C1917;">Day ${c.dueDay} · ${esc(dueInfo.label)}</span>
+                    </div>
+                  </div>
+                  <div style="display:flex; justify-content:flex-end; margin-top:12px;">
+                    <button class="btn btn-ghost btn-small" onclick="openCardSoa('${c.id}')">View Card SOA</button>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        `;
+      } 
+      
+      else if(state.tab === "budget") {
+        const selectedBudgetMonth = getSelectedBudgetMonth();
+        const budgetMonthLabel = formatMonth(selectedBudgetMonth);
+        const budgetMonthOptions = getBudgetMonthOptions();
+        const expenseMetrics = getBudgetExpenseMetrics(selectedBudgetMonth);
+
+        main.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:24px; flex-wrap:wrap;">
+            <div>
+              <h1 style="font-weight: 800; font-size: 26px; letter-spacing: -0.02em;">Budgetary Threshold Matrix</h1>
+              <p style="color:#78716C; font-size:13px; font-weight:500;">Showing <strong>${budgetMonthLabel}</strong> allocations and transactions. Each month can have its own budget cap.</p>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center; justify-content:flex-end; flex-wrap:wrap;">
+              <select class="form-input" style="width:200px; font-size:12px;" onchange="setBudgetMonth(this.value)">
+                <option value="current" ${state.ui.budgetMonth === "current" ? "selected" : ""}>Current Month (${formatMonth(getMonthKey(today()))})</option>
+                ${budgetMonthOptions.filter(m => m !== getMonthKey(today())).map(m => `<option value="${m}" ${state.ui.budgetMonth === m ? "selected" : ""}>${formatMonth(m)}</option>`).join('')}
+              </select>
+              <button class="btn btn-primary" onclick="openModal('addBudget')">+ Instantiate Category</button>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap:16px;">
+            ${state.budgets.map(b => {
+              const actualSpent = getActualExpenseTotalForCategory(b.cat, selectedBudgetMonth);
+              const spent = expenseMetrics[b.cat] || 0;
+              const limit = getBudgetLimit(b, selectedBudgetMonth);
+              const pct = limit > 0 ? Math.round((spent / limit) * 100) : 0;
+              const over = spent > limit;
+              const strokeColor = over ? "#D94F4F" : (CAT_COLORS[b.cat] || "#0D9E80");
+              const strokeDashoffset = 213.6 * (1 - Math.min(pct, 100) / 100);
+
+              return `
+                <div class="card" style="display:flex; gap:16px; align-items:center; border-color:${over ? '#D94F4F55':'#DDD8CE'}">
+                  <div style="position:relative; width:76px; height:76px; flex-shrink:0;">
+                    <svg width="76" height="76" style="transform: rotate(-90deg); flex-shrink: 0;">
+                      <circle cx="38" cy="38" r="34" fill="none" stroke="#DDD8CE" stroke-width="6"/>
+                      <circle cx="38" cy="38" r="34" fill="none" stroke="${strokeColor}" stroke-width="6" 
+                              stroke-linecap="round" stroke-dasharray="213.6" stroke-dashoffset="${strokeDashoffset}" 
+                              style="transition: stroke-dashoffset 0.5s;" />
+                    </svg>
+                    <div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; line-height:1.1;">
+                      <span style="font-size:18px;">${b.icon || '📌'}</span>
+                      <span style="font-size:10px; font-weight:800; color:${strokeColor}; font-family:'Plus Jakarta Sans'; margin-top:2px;">${pct}%</span>
+                    </div>
+                  </div>
+                  
+                  <div style="flex:1; min-width:0;">
+                    <div style="font-weight:800; font-size:15px; letter-spacing:-0.01em; margin-bottom:2px;">${b.label}</div>
+                    <div style="font-size:13px; color:#1C1917; font-weight:700;">
+                      ${peso(spent)} <span style="color:#78716C; font-weight:500;">/ ${formatMonth(selectedBudgetMonth)} Limit:</span>
+                    </div>
+                    <div style="font-size:10px; color:#78716C; font-weight:600; margin-top:3px;">${budgetMonthLabel} logged spend ${peso(actualSpent)}</div>
+                    <div style="margin-top:6px; display:flex; align-items:center; gap:6px;">
+                      <span style="font-size:11px; color:#78716C; font-weight:700;">₱</span>
+                      <input type="text" inputmode="decimal" value="${moneyInputValue(limit)}" onfocus="selectMoneyInput(this)" onchange="formatMoneyInput(this); updateBudgetLimit('${b.id}', this.value)" class="money-input" style="width:110px; background:#EDE8DE; border:1px solid #C8C2B6; border-radius:6px; padding:3px 6px; font-size:12px; font-weight:600; outline:none; font-family:'Manrope';" />
+                    </div>
+                    <div style="font-size:10px; margin-top:5px; font-weight:600; color:${over?'#D94F4F':'#78716C'}">
+                      ${over ? `Over bounds by ${peso(spent-limit)}` : `${peso(limit-spent)} buffer remaining`}
+                    </div>
+                  </div>
+                  
+                  <button onclick="deleteBudget('${b.id}')" style="background:none; border:none; color:#C8C2B6; cursor:pointer; font-size:16px; align-self:flex-start;">×</button>
+                </div>
+              `;
+            }).join('')}
+          </div>
+
+          ${renderAmortizationSection(selectedBudgetMonth)}
+        `;
+      } 
+      
+      else if(state.tab === "analysis") {
+        main.innerHTML = `
+          <div style="margin-bottom:26px;">
+            <h1 style="font-weight: 800; font-size: 26px; letter-spacing: -0.02em; margin-bottom:4px;">Income Analysis</h1>
+            <p style="color:#78716C; font-size:13px; font-weight:500;">Custom structural salary matrix model. Manage individual revenue pools and manual progressive deductions below.</p>
+          </div>
+
+          <div class="grid-2">
+            <div class="card">
+              <h3 style="font-size:14px; margin-bottom:4px; color:#0D9E80; text-transform:uppercase; font-weight:800; letter-spacing:0.04em;">${state.partnerNames.you} Framework</h3>
+              ${renderTaxBreakdownHTML(state.salaries.you, analysisYou, 'you')}
+            </div>
+
+            <div class="card">
+              <h3 style="font-size:14px; margin-bottom:4px; color:#4F54D4; text-transform:uppercase; font-weight:800; letter-spacing:0.04em;">${state.partnerNames.partner} Framework</h3>
+              ${renderTaxBreakdownHTML(state.salaries.partner, analysisPartner, 'partner')}
+            </div>
+          </div>
+          
+          <div class="card" style="margin-bottom: 24px;">
+            <h3 style="font-size:15px; margin-bottom:4px; font-weight:800; letter-spacing:-0.01em;">Additional Income Streams Mapping</h3>
+            <p style="color:#78716C; font-size:12px; margin-bottom:16px; font-weight:500;">Incorporate secondary consulting frameworks, allowances, alternative side channels, or tracking models.</p>
+            
+            <div style="display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap;">
+              <input type="text" id="add-inc-desc" class="form-input" style="flex:2; min-width:180px; font-size:13px;" placeholder="Income Source Identifier (e.g., Side Consulting, Rental)" />
+              <input type="text" inputmode="decimal" id="add-inc-amt" class="form-input money-input" style="flex:1; min-width:130px; font-size:13px;" placeholder="₱ 0.00" onfocus="selectMoneyInput(this)" onblur="formatMoneyInput(this)" />
+              <select id="add-inc-earner" class="form-input" style="flex:1; min-width:130px; font-size:13px;">
+                <option value="you">${state.partnerNames.you}</option>
+                <option value="partner">${state.partnerNames.partner}</option>
+              </select>
+              <button class="btn btn-primary" onclick="addAdditionalIncomeStream()">Include Position</button>
+            </div>
+
+            <div style="display:grid; gap:8px;" id="additional-incomes-list">
+              ${state.incomeSources.length === 0 ? '<div style="font-size:12px; color:#A89E94; text-align:center; padding:16px; font-weight:500;">No alternative active revenue positions mapped for this cycle.</div>' : 
+                state.incomeSources.map(s => `
+                  <div style="background:#EDE8DE33; padding:12px 16px; border-radius:10px; border:1px solid #DDD8CE; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                      <strong style="font-size:13px; color:#1C1917; font-weight:700;">${s.desc}</strong>
+                      <span class="tag" style="background:#0D9E8012; color:#0D9E80; margin-left:8px; text-transform:uppercase;">${s.earner === 'you' ? state.partnerNames.you : state.partnerNames.partner}</span>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:16px;">
+                      <span style="font-weight:800; color:#0D9E80; font-size:14px;">+${peso(s.expectedAmt)}</span>
+                      <button onclick="deleteAdditionalIncomeStream('${s.id}')" style="background:none; border:none; color:#A89E94; cursor:pointer; font-size:14px;">🗑</button>
+                    </div>
+                  </div>
+                `).join('')}
+            </div>
+          </div>
+
+          <div class="card" style="background:#EDE8DE33; padding:16px 20px;">
+            <h4 style="font-size:11px; text-transform:uppercase; color:#78716C; margin-bottom:6px; font-weight:700; letter-spacing:0.04em;">Engine Computation Reference Rules</h4>
+            <p style="font-size:11px; color:#78716C; line-height:1.6; font-weight:500;">
+              • <strong>Manual Overrides:</strong> Adjust the input positions directly in the earner cards above. Changes are dynamically consolidated into the main dashboard summaries in real-time.
+            </p>
+          </div>
+        `;
+      }
+    }
+
+    function renderTaxBreakdownHTML(gross, d, earnerKey) {
+      return `
+        <div style="display:grid; gap:12px; font-size:13px; margin-top:14px;">
+          
+          <div style="display:grid; grid-template-columns: 1fr 130px; gap:10px; align-items:center; padding-bottom:2px;">
+            <span style="color:#6B6661; font-size:12px; font-weight:600; font-family:'Plus Jakarta Sans';">Base Structural Salary</span>
+            <input type="text" inputmode="decimal" value="${moneyInputValue(gross)}" onfocus="selectMoneyInput(this)" onchange="formatMoneyInput(this); updateSalary('${earnerKey}', this.value)" class="modern-input-field money-input" />
+          </div>
+
+          <div style="display:flex; justify-content:space-between; color:#0D9E80; font-size:12px; font-weight:600; padding: 2px 0;">
+            <span>+ Integrated Side Channels</span>
+            <span style="font-size:13px; font-weight:700;">+${pesoF(d.additional)}</span>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; font-weight:800; font-family:'Plus Jakarta Sans'; color:#1C1917; border-top:1px solid #DDD8CE; padding-top:10px; font-size:13px;">
+            <span>Consolidated Gross Base</span>
+            <span style="font-size:14px;">${pesoF(d.totalGross)}</span>
+          </div>
+          
+          <div style="background:#EDE8DE44; padding:14px; border-radius:11px; display:grid; gap:10px; border:1px solid #DDD8CE; margin-top:4px;">
+            <div style="font-size:10px; font-weight:800; color:#78716C; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:2px; font-family:'Plus Jakarta Sans';">Manual Monthly Deductions</div>
+            
+            <div style="display:grid; grid-template-columns: 1fr 110px; gap:10px; align-items:center;">
+              <span style="color:#57534E; font-size:12px; font-weight:500;">SSS Contribution</span>
+              <input type="text" inputmode="decimal" value="${moneyInputValue(d.sss)}" onfocus="selectMoneyInput(this)" onchange="formatMoneyInput(this); updateDeduction('${earnerKey}', 'sss', this.value)" class="modern-input-field money-input" />
+            </div>
+            
+            <div style="display:grid; grid-template-columns: 1fr 110px; gap:10px; align-items:center;">
+              <span style="color:#57534E; font-size:12px; font-weight:500;">PhilHealth (PHIC)</span>
+              <input type="text" inputmode="decimal" value="${moneyInputValue(d.phic)}" onfocus="selectMoneyInput(this)" onchange="formatMoneyInput(this); updateDeduction('${earnerKey}', 'phic', this.value)" class="modern-input-field money-input" />
+            </div>
+            
+            <div style="display:grid; grid-template-columns: 1fr 110px; gap:10px; align-items:center;">
+              <span style="color:#57534E; font-size:12px; font-weight:500;">Pag-IBIG (HDMF)</span>
+              <input type="text" inputmode="decimal" value="${moneyInputValue(d.hdmf)}" onfocus="selectMoneyInput(this)" onchange="formatMoneyInput(this); updateDeduction('${earnerKey}', 'hdmf', this.value)" class="modern-input-field money-input" />
+            </div>
+            
+            <div style="display:grid; grid-template-columns: 1fr 110px; gap:10px; align-items:center; border-top:1px dashed #DDD8CE; padding-top:8px;">
+              <span style="color:#D94F4F; font-size:12px; font-weight:700;">BIR Withholding Tax</span>
+              <input type="text" inputmode="decimal" value="${moneyInputValue(d.tax)}" onfocus="selectMoneyInput(this)" onchange="formatMoneyInput(this); updateDeduction('${earnerKey}', 'tax', this.value)" class="modern-input-field money-input" style="border-color:#C8C2B6; color:#D94F4F; font-weight:700;" />
+            </div>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; padding-top:14px; font-weight:800; font-size:16px; border-top:2px solid #C8C2B6; color:#0D9E80; font-family:'Plus Jakarta Sans'; letter-spacing:-0.02em;">
+            <span>Net Financial Revenue Yield</span>
+            <span style="font-size:20px; font-weight:800; font-family:'Manrope';">${pesoF(d.net)}</span>
+          </div>
+        </div>
+      `;
+    }
+
+    // ─── STATE MUTATIONS ───
+    function updateSalary(earner, value) {
+      state.salaries[earner] = parseMoney(value) || 0;
+      saveState();
+    }
+
+    function updateDeduction(earner, field, value) {
+      if(!state.deductions[earner]) {
+        state.deductions[earner] = { sss: 0, phic: 0, hdmf: 0, tax: 0 };
+      }
+      state.deductions[earner][field] = parseMoney(value) || 0;
+      saveState();
+    }
+
+    function updateBudgetLimit(id, value) {
+      setBudgetLimitForMonth(id, getSelectedBudgetMonth(), value);
+      saveState();
+    }
+
+    function deleteExpense(id) {
+      const entry = state.expenses.find(e => e.id === id);
+      if(entry) {
+        const source = getTransactionPaymentSource(entry);
+        if(source && source.type === "cash") adjustCashAccountBalance(source.id, parseMoney(entry.amount) || 0);
+      }
+      state.expenses = state.expenses.filter(e => e.id !== id);
+      saveState();
+    }
+
+    function deleteIncome(id) {
+      const entry = state.receivedIncome.find(i => i.id === id);
+      if(entry) {
+        const source = getTransactionPaymentSource(entry);
+        if(source && source.type === "cash") adjustCashAccountBalance(source.id, -(parseMoney(entry.amount) || 0));
+      }
+      state.receivedIncome = state.receivedIncome.filter(i => i.id !== id);
+      saveState();
+    }
+
+    function deleteCard(id) {
+      state.cards = state.cards.filter(c => c.id !== id);
+      saveState();
+    }
+
+    function deleteBudget(id) {
+      state.budgets = state.budgets.filter(b => b.id !== id);
+      saveState();
+    }
+
+    function addAdditionalIncomeStream() {
+      const desc = document.getElementById("add-inc-desc").value.trim();
+      const expectedAmt = parseMoney(document.getElementById("add-inc-amt").value);
+      const earner = document.getElementById("add-inc-earner").value;
+
+      if(!desc || isNaN(expectedAmt) || expectedAmt <= 0) return;
+
+      state.incomeSources.push({
+        id: "s" + Date.now(),
+        desc,
+        expectedAmt,
+        earner
+      });
+
+      document.getElementById("add-inc-desc").value = "";
+      document.getElementById("add-inc-amt").value = "";
+
+      saveState();
+    }
+
+    function deleteAdditionalIncomeStream(id) {
+      state.incomeSources = state.incomeSources.filter(s => s.id !== id);
+      saveState();
+    }
+
+    function openEditTransaction(rowType, id) {
+      const isIncome = rowType === "income";
+      const entry = isIncome
+        ? (state.receivedIncome || []).find(i => i.id === id)
+        : (state.expenses || []).find(e => e.id === id);
+      if(!entry) return;
+      const modal = document.getElementById("modal-container");
+      modal.style.display = "flex";
+      modal.className = "modal-backdrop";
+      const selectedSource = getPaymentSourceSelectValue(entry);
+      modal.innerHTML = `
+        <div class="modal-content">
+          <h3 style="margin-bottom:18px; font-weight:800; letter-spacing:-0.01em;">Edit ${isIncome ? "Income" : "Expense"}</h3>
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <input type="text" id="edit-desc" class="form-input" value="${esc(entry.desc)}" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Amount (₱)</label>
+            <input type="text" inputmode="decimal" id="edit-amount" class="form-input money-input" value="${moneyInputValue(entry.amount)}" onfocus="selectMoneyInput(this)" onblur="formatMoneyInput(this)" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Transaction Date</label>
+            <input type="text" inputmode="numeric" id="edit-date" class="form-input date-input" value="${esc(formatDateInputValue(entry.date || today()))}" placeholder="MM/DD/YYYY" onblur="formatDateInput(this)" />
+          </div>
+          ${isIncome ? `
+            <div class="form-group">
+              <label class="form-label">Cash on Hand Destination</label>
+              <select id="edit-via" class="form-input">${renderPaymentMethodOptions(false, selectedSource)}</select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Income Classification</label>
+              <select id="edit-income-type" class="form-input">
+                <option value="salary" ${(entry.type || "salary") === "salary" ? "selected" : ""}>Salary</option>
+                <option value="additional" ${(entry.type || "salary") !== "salary" ? "selected" : ""}>Additional Income</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Designated Resource Earner</label>
+              <select id="edit-earner" class="form-input">
+                <option value="You" ${entry.earner === "You" ? "selected" : ""}>You</option>
+                <option value="Partner" ${entry.earner === "Partner" ? "selected" : ""}>Partner</option>
+                <option value="Joint" ${entry.earner === "Joint" ? "selected" : ""}>Joint Asset Pooling</option>
+              </select>
+            </div>
+          ` : `
+            <div class="form-group">
+              <label class="form-label">Allocation Stream Category / Amortization</label>
+              <select id="edit-cat" class="form-input">
+                ${renderCategoryOptions(entry.cat)}
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Payment Source / Card Used</label>
+              <select id="edit-via" class="form-input">${renderPaymentMethodOptions(true, selectedSource)}</select>
+            </div>
+          `}
+          <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px;">
+            <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="saveEditedTransaction('${rowType}', '${id}')">Save Changes</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function saveEditedTransaction(rowType, id) {
+      const desc = document.getElementById("edit-desc").value.trim();
+      const amount = cleanMoney(document.getElementById("edit-amount").value);
+      const date = parseDateInput(document.getElementById("edit-date").value) || today();
+      const source = parsePaymentSource(document.getElementById("edit-via").value);
+      if(!desc || !amount || !source) return;
+
+      if(rowType === "income") {
+        if(source.type !== "cash") return;
+        state.receivedIncome = state.receivedIncome.map(item => item.id === id ? {
+          ...item,
+          desc,
+          amount,
+          date,
+          via: source.name,
+          paymentSourceType: source.type,
+          paymentSourceId: source.id,
+          earner: document.getElementById("edit-earner").value,
+          type: document.getElementById("edit-income-type").value
+        } : item);
+      } else {
+        state.expenses = state.expenses.map(item => item.id === id ? {
+          ...item,
+          desc,
+          amount,
+          date,
+          cat: document.getElementById("edit-cat").value,
+          via: source.name,
+          paymentSourceType: source.type,
+          paymentSourceId: source.id
+        } : item);
+      }
+      closeModal();
+      saveState();
+    }
+
+    // ─── MODAL CONTROLLERS ───
+    function openModal(type) {
+      const modal = document.getElementById("modal-container");
+      modal.style.display = "flex";
+      modal.className = "modal-backdrop";
+      
+      let innerHTML = "";
+      
+      if(type === "addCashAccount") {
+        innerHTML = `
+          <div class="modal-content">
+            <h3 style="margin-bottom:18px; font-weight:800; letter-spacing:-0.01em;">Add Cash on Hand Item</h3>
+            <div class="form-group">
+              <label class="form-label">Cash Label</label>
+              <input type="text" id="cash-account-name" class="form-input" placeholder="e.g. BPI Payroll, UnionBank Savings, GCash, Emergency Cash" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Color</label>
+              <input type="color" id="cash-account-color" class="cash-color-input" value="${getNextCashColor()}" style="width:64px;" />
+            </div>
+            <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px;">
+              <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+              <button class="btn btn-primary" onclick="submitCashAccount()">Add Label</button>
+            </div>
+          </div>
+        `;
+      }
+
+      else if(type === "savingsTarget") {
+        innerHTML = `
+          <div class="modal-content">
+            <h3 style="margin-bottom:18px; font-weight:800; letter-spacing:-0.01em;">Monthly Savings Target</h3>
+            <div class="form-group">
+              <label class="form-label">Target Amount (₱)</label>
+              <input type="text" inputmode="decimal" id="savings-target-input" class="form-input money-input" value="${moneyInputValue(state.settings.monthlySavingsTarget || 0)}" placeholder="₱ 0.00" onfocus="selectMoneyInput(this)" onblur="formatMoneyInput(this)" />
+            </div>
+            <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px;">
+              <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+              <button class="btn btn-primary" onclick="submitSavingsTarget()">Save Target</button>
+            </div>
+          </div>
+        `;
+      }
+
+      else if(type === "addIncome") {
+        innerHTML = `
+          <div class="modal-content">
+            <h3 style="margin-bottom:18px; font-weight:800; letter-spacing:-0.01em;">Log Inbound Cash Flow</h3>
+            <div class="form-group">
+              <label class="form-label">Line Item Description</label>
+              <input type="text" id="inc-desc" class="form-input" placeholder="e.g. Regular Semi-Monthly Check" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Absolute Amount (₱)</label>
+              <input type="text" inputmode="decimal" id="inc-amount" class="form-input money-input" placeholder="₱ 0.00" onfocus="selectMoneyInput(this)" onblur="formatMoneyInput(this)" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Transaction Date</label>
+              <input type="text" inputmode="numeric" id="inc-date" class="form-input date-input" value="${formatDateInputValue(today())}" placeholder="MM/DD/YYYY" onblur="formatDateInput(this)" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Inbound Execution Vehicle</label>
+              <select id="inc-via" class="form-input">
+                ${renderPaymentMethodOptions(false)}
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Income Classification</label>
+              <select id="inc-type" class="form-input">
+                <option value="salary">Salary</option>
+                <option value="additional">Additional Income</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Designated Resource Earner</label>
+              <select id="inc-earner" class="form-input">
+                <option value="You">You</option>
+                <option value="Partner">Partner</option>
+                <option value="Joint">Joint Asset Pooling</option>
+              </select>
+            </div>
+            <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px;">
+              <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+              <button class="btn btn-primary" onclick="submitIncome()">Save Transaction</button>
+            </div>
+          </div>
+        `;
+      } 
+      
+      else if(type === "addExpense") {
+        innerHTML = `
+          <div class="modal-content">
+            <h3 style="margin-bottom:18px; font-weight:800; letter-spacing:-0.01em;">Record Outbound Expense</h3>
+            <div class="form-group">
+              <label class="form-label">Expense Description</label>
+              <input type="text" id="exp-desc" class="form-input" placeholder="e.g. Marketplace Provisioning" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Amount Out (₱)</label>
+              <input type="text" inputmode="decimal" id="exp-amount" class="form-input money-input" placeholder="₱ 0.00" onfocus="selectMoneyInput(this)" onblur="formatMoneyInput(this)" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Transaction Date</label>
+              <input type="text" inputmode="numeric" id="exp-date" class="form-input date-input" value="${formatDateInputValue(today())}" placeholder="MM/DD/YYYY" onblur="formatDateInput(this)" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Allocation Stream Category / Amortization</label>
+              <select id="exp-cat" class="form-input">
+                ${renderCategoryOptions()}
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Payment Source / Card Used</label>
+              <select id="exp-via" class="form-input">
+                ${renderPaymentMethodOptions(true)}
+              </select>
+            </div>
+            <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px;">
+              <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+              <button class="btn btn-primary" onclick="submitExpense()">Log Entry</button>
+            </div>
+          </div>
+        `;
+      } 
+      
+      else if(type === "addCard") {
+        innerHTML = `
+          <div class="modal-content">
+            <h3 style="margin-bottom:18px; font-weight:800; letter-spacing:-0.01em;">Incorporate Credit Instrument</h3>
+            <div class="form-group">
+              <label class="form-label">Card Nomenclature Identifier</label>
+              <input type="text" id="card-name" class="form-input" placeholder="e.g. Platinum Max Visa" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Issuing Banking Institution</label>
+              <input type="text" id="card-bank" class="form-input" placeholder="e.g. BPI / BDO" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Assigned Credit Limit (₱)</label>
+              <input type="text" inputmode="decimal" id="card-limit" class="form-input money-input" placeholder="₱ 100,000.00" onfocus="selectMoneyInput(this)" onblur="formatMoneyInput(this)" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Statement Closing Calendar Day</label>
+              <input type="number" id="card-cut" class="form-input" min="1" max="31" placeholder="5" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Settlement Due Calendar Day</label>
+              <input type="number" id="card-due" class="form-input" min="1" max="31" placeholder="25" />
+            </div>
+            <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px;">
+              <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+              <button class="btn btn-primary" onclick="submitCard()">Add Instrument</button>
+            </div>
+          </div>
+        `;
+      } 
+      
+      else if(type === "addAmortization") {
+        innerHTML = `
+          <div class="modal-content">
+            <h3 style="margin-bottom:18px; font-weight:800; letter-spacing:-0.01em;">Add Amortization</h3>
+            <div class="form-group">
+              <label class="form-label">Amortization Name</label>
+              <input type="text" id="amort-name" class="form-input" placeholder="e.g. Car Loan, Phone Plan" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Budget Category</label>
+              <select id="amort-cat" class="form-input">
+                ${CATS.map(c=>`<option value="${c.v}">${c.i} ${esc(c.l)}</option>`).join('')}
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Monthly Payment (₱)</label>
+              <input type="text" inputmode="decimal" id="amort-amount" class="form-input money-input" placeholder="₱ 0.00" onfocus="selectMoneyInput(this)" onblur="formatMoneyInput(this)" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Start Month</label>
+              <input type="text" inputmode="numeric" id="amort-start" class="form-input date-input" value="${formatDateInputValue(today())}" placeholder="MM/DD/YYYY" onblur="formatDateInput(this)" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Term in Months</label>
+              <input type="number" id="amort-months" class="form-input" min="1" placeholder="e.g. 60" />
+            </div>
+            <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px;">
+              <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+              <button class="btn btn-primary" onclick="submitAmortization()">Save Amortization</button>
+            </div>
+          </div>
+        `;
+      }
+      
+      else if(type === "addBudget") {
+        innerHTML = `
+          <div class="modal-content">
+            <h3 style="margin-bottom:6px; font-weight:800; letter-spacing:-0.01em;">Instantiate Budget Cap Structure</h3>
+            <p style="color:#78716C; font-size:12px; font-weight:500; margin-bottom:16px;">This allocation will be saved for ${formatMonth(getSelectedBudgetMonth())} only.</p>
+            <div class="form-group">
+              <label class="form-label">Select Frame Category Target</label>
+              <select id="budget-cat" class="form-input">
+                ${CATS.map(c=>`<option value="${c.v}">${c.i} ${c.l}</option>`).join('')}
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">${formatMonth(getSelectedBudgetMonth())} Upper Ceiling Cap (₱)</label>
+              <input type="text" inputmode="decimal" id="budget-limit" class="form-input money-input" placeholder="₱ 0.00" onfocus="selectMoneyInput(this)" onblur="formatMoneyInput(this)" />
+            </div>
+            <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px;">
+              <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+              <button class="btn btn-primary" onclick="submitBudget()">Establish Boundary</button>
+            </div>
+          </div>
+        `;
+      }
+      
+      modal.innerHTML = innerHTML;
+    }
+
+    function closeModal() {
+      document.getElementById("modal-container").style.display = "none";
+    }
+
+    function submitCashAccount() {
+      const name = document.getElementById("cash-account-name").value.trim();
+      const color = cleanHexColor(document.getElementById("cash-account-color").value || getNextCashColor());
+      if(!name) return;
+      state.cashAccounts.push({
+        id: "ca" + Date.now(),
+        name,
+        balance: 0,
+        color
+      });
+      closeModal();
+      saveState();
+    }
+
+    function submitSavingsTarget() {
+      updateSavingsTarget(document.getElementById("savings-target-input").value);
+      closeModal();
+    }
+
+    function submitIncome() {
+      const desc = document.getElementById("inc-desc").value.trim();
+      const amount = cleanMoney(document.getElementById("inc-amount").value);
+      const source = parsePaymentSource(document.getElementById("inc-via").value);
+      if(!desc || !amount || !source || source.type !== "cash") return;
+
+      state.receivedIncome.push({
+        id: "i" + Date.now(),
+        desc,
+        amount,
+        date: parseDateInput(document.getElementById("inc-date").value) || today(),
+        via: source.name,
+        paymentSourceType: source.type,
+        paymentSourceId: source.id,
+        earner: document.getElementById("inc-earner").value,
+        type: document.getElementById("inc-type").value
+      });
+      
+      closeModal();
+      saveState();
+    }
+
+    function submitExpense() {
+      const desc = document.getElementById("exp-desc").value.trim();
+      const amount = cleanMoney(document.getElementById("exp-amount").value);
+      const source = parsePaymentSource(document.getElementById("exp-via").value);
+      if(!desc || !amount || !source) return;
+
+      state.expenses.push({
+        id: "e" + Date.now(),
+        desc,
+        amount,
+        date: parseDateInput(document.getElementById("exp-date").value) || today(),
+        cat: document.getElementById("exp-cat").value,
+        via: source.name,
+        paymentSourceType: source.type,
+        paymentSourceId: source.id,
+        earner: "Joint"
+      });
+      
+      closeModal();
+      saveState();
+    }
+
+    function submitCard() {
+      const name = document.getElementById("card-name").value;
+      const bank = document.getElementById("card-bank").value;
+      const limit = cleanMoney(document.getElementById("card-limit").value);
+      const cutDay = parseInt(document.getElementById("card-cut").value) || 5;
+      const dueDay = parseInt(document.getElementById("card-due").value) || 25;
+      if(!name || !limit) return;
+      
+      const palette = ["#0D9E80", "#4F54D4", "#B45309", "#E879F9", "#4ADE80"];
+      const color = palette[state.cards.length % palette.length];
+      
+      state.cards.push({ id: "cc" + Date.now(), name, bank, limit, statementBalance: 0, outstandingBalance: 0, cutDay, dueDay, color });
+      closeModal();
+      saveState();
+    }
+
+    function submitBudget() {
+      const cat = document.getElementById("budget-cat").value;
+      const limit = cleanMoney(document.getElementById("budget-limit").value);
+      if(!cat || !limit) return;
+      
+      const match = getCatInfo(cat);
+      const selectedMonth = getSelectedBudgetMonth();
+      const existing = state.budgets.find(b => b.cat === cat);
+      if(existing) {
+        setBudgetLimitForMonth(existing.id, selectedMonth, limit);
+      } else {
+        state.budgets.push({ id: "bg" + Date.now(), cat, label: match.l, icon: match.i, limit, monthlyLimits: { [selectedMonth]: limit } });
+      }
+      closeModal();
+      saveState();
+    }
+
+    function submitAmortization() {
+      const name = document.getElementById("amort-name").value.trim();
+      const cat = document.getElementById("amort-cat").value;
+      const monthlyAmount = cleanMoney(document.getElementById("amort-amount").value);
+      const startDate = parseDateInput(document.getElementById("amort-start").value) || today();
+      const termMonths = Math.max(1, parseInt(document.getElementById("amort-months").value) || 0);
+      if(!name || !cat || !monthlyAmount || !termMonths) return;
+      state.amortizations.push({ id: "am" + Date.now(), name, cat, monthlyAmount, startDate, termMonths });
+      closeModal();
+      saveState();
+    }
+
+    function deleteAmortization(id) {
+      if(!confirm("Remove this amortization item?")) return;
+      state.amortizations = (state.amortizations || []).filter(item => item.id !== id);
+      saveState();
+    }
+
+
+
+    // ─── SUPABASE CLOUD SYNC ───
+    let supabaseClient = null;
+    let currentCloudUser = null;
+    let cloudHouseholdId = null;
+    let cloudReady = false;
+    let cloudSaveTimer = null;
+    let cloudIsLoading = false;
+
+    function getSupabaseClient() {
+      if(supabaseClient) return supabaseClient;
+      if(!window.supabase || !window.supabase.createClient) return null;
+      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+        auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+      });
+      return supabaseClient;
+    }
+
+    function cloudStateForSave() {
+      const snapshot = JSON.parse(JSON.stringify(state));
+      delete snapshot.tab;
+      delete snapshot.ui;
+      return snapshot;
+    }
+
+    function mergeRemoteState(remoteState) {
+      const currentTab = state.tab || "overview";
+      const currentUi = state.ui || { txSearch: "", txType: "all", txCategory: "all", txMonth: "all", budgetMonth: "current" };
+      state = { ...state, ...(remoteState || {}) };
+      state.tab = currentTab;
+      state.ui = { txSearch: "", txType: "all", txCategory: "all", txMonth: "all", budgetMonth: "current", ...currentUi };
+      normalizeCashAccounts();
+      normalizeTransactionPaymentSources();
+      localStorage.setItem("finance_tracker_state", JSON.stringify(state));
+    }
+
+    function refreshCloudUi(message) {
+      const status = document.getElementById("cloud-status");
+      const dot = document.getElementById("cloud-dot");
+      const user = document.getElementById("cloud-user");
+      const loginBtn = document.getElementById("cloud-login-btn");
+      const syncBtn = document.getElementById("cloud-sync-btn");
+      const signoutBtn = document.getElementById("cloud-signout-btn");
+      if(status) status.innerText = message || (cloudReady ? "Connected to Supabase" : "Local mode");
+      if(dot) dot.className = "cloud-dot" + (cloudReady ? " online" : (message && message.toLowerCase().includes("error") ? " error" : ""));
+      if(user) user.innerText = currentCloudUser ? currentCloudUser.email : "Not signed in";
+      if(loginBtn) loginBtn.style.display = currentCloudUser ? "none" : "inline-flex";
+      if(syncBtn) syncBtn.style.display = currentCloudUser ? "inline-flex" : "none";
+      if(signoutBtn) signoutBtn.style.display = currentCloudUser ? "inline-flex" : "none";
+    }
+
+    function openCloudLogin() {
+      const modal = document.getElementById("modal-container");
+      modal.style.display = "flex";
+      modal.className = "modal-backdrop";
+      modal.innerHTML = `
+        <div class="modal-content">
+          <h3 style="margin-bottom:6px; font-weight:800; letter-spacing:-0.01em;">Cloud Login</h3>
+          <p class="auth-note">Use the email/password user you create under Supabase Authentication. The password is never saved in this HTML file.</p>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" id="cloud-email" class="form-input" placeholder="you@example.com" autocomplete="username" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" id="cloud-password" class="form-input" placeholder="Password" autocomplete="current-password" />
+          </div>
+          <div id="cloud-auth-error" style="display:none; color:#D94F4F; font-size:12px; font-weight:700; margin-bottom:12px;"></div>
+          <div style="display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap; margin-top:20px;">
+            <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+            <button class="btn btn-ghost" onclick="submitCloudAuth('signup')">Create Account</button>
+            <button class="btn btn-primary" onclick="submitCloudAuth('signin')">Sign In</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function setCloudAuthError(message) {
+      const el = document.getElementById("cloud-auth-error");
+      if(!el) return;
+      el.style.display = message ? "block" : "none";
+      el.innerText = message || "";
+    }
+
+    async function submitCloudAuth(mode) {
+      const client = getSupabaseClient();
+      if(!client) {
+        setCloudAuthError("Supabase library was not loaded. Check your internet connection or CDN access.");
+        return;
+      }
+      const email = document.getElementById("cloud-email").value.trim();
+      const password = document.getElementById("cloud-password").value;
+      if(!email || !password) {
+        setCloudAuthError("Enter both email and password.");
+        return;
+      }
+      setCloudAuthError("");
+      const result = mode === "signup"
+        ? await client.auth.signUp({ email, password })
+        : await client.auth.signInWithPassword({ email, password });
+      if(result.error) {
+        setCloudAuthError(result.error.message || "Authentication failed.");
+        return;
+      }
+      currentCloudUser = result.data && result.data.user ? result.data.user : null;
+      closeModal();
+      await connectCloudAfterLogin();
+    }
+
+    async function initCloud() {
+      const client = getSupabaseClient();
+      if(!client) {
+        refreshCloudUi("Cloud unavailable");
+        return;
+      }
+      const { data } = await client.auth.getSession();
+      currentCloudUser = data && data.session && data.session.user ? data.session.user : null;
+      refreshCloudUi(currentCloudUser ? "Connecting..." : "Local mode");
+      client.auth.onAuthStateChange((_event, session) => {
+        currentCloudUser = session && session.user ? session.user : null;
+        if(!currentCloudUser) {
+          cloudReady = false;
+          cloudHouseholdId = null;
+          refreshCloudUi("Local mode");
+          setStorageStatus("Saved Locally");
+        }
+      });
+      if(currentCloudUser) await connectCloudAfterLogin();
+    }
+
+    async function connectCloudAfterLogin() {
+      const client = getSupabaseClient();
+      if(!client || !currentCloudUser) return;
+      cloudIsLoading = true;
+      cloudReady = false;
+      refreshCloudUi("Preparing household...");
+      const rpc = await client.rpc("ensure_default_finance_household");
+      if(rpc.error) {
+        cloudIsLoading = false;
+        refreshCloudUi("Cloud setup error");
+        setStorageStatus("Supabase setup needed", "#D94F4F");
+        alert("Supabase setup is not ready yet. Run the SQL setup script first, then sign in again.\n\n" + rpc.error.message);
+        return;
+      }
+      cloudHouseholdId = rpc.data;
+      await loadCloudState();
+      cloudReady = true;
+      cloudIsLoading = false;
+      refreshCloudUi("Connected to Supabase");
+      setStorageStatus("Saved Local + Cloud");
+      calculateAndRender();
+    }
+
+    async function loadCloudState() {
+      const client = getSupabaseClient();
+      if(!client || !cloudHouseholdId) return;
+      refreshCloudUi("Loading cloud data...");
+      const { data, error } = await client
+        .from("finance_tracker_states")
+        .select("state, updated_at")
+        .eq("household_id", cloudHouseholdId)
+        .maybeSingle();
+      if(error) {
+        refreshCloudUi("Cloud load error");
+        alert("Could not load cloud data: " + error.message);
+        return;
+      }
+      const hasRemoteState = data && data.state && Object.keys(data.state).length > 0;
+      if(hasRemoteState) {
+        mergeRemoteState(data.state);
+      } else {
+        await saveCloudNow(true);
+      }
+    }
+
+    function scheduleCloudSave() {
+      if(!cloudReady || cloudIsLoading || !currentCloudUser || !cloudHouseholdId) return;
+      clearTimeout(cloudSaveTimer);
+      cloudSaveTimer = setTimeout(() => saveCloudNow(false), 800);
+    }
+
+    async function saveCloudNow(showAlert = false) {
+      const client = getSupabaseClient();
+      if(!client || !currentCloudUser || !cloudHouseholdId) {
+        if(showAlert) alert("Sign in to Supabase Cloud Sync first.");
+        return;
+      }
+      setStorageStatus("Saving Local + Cloud...");
+      refreshCloudUi("Syncing...");
+      const { error } = await client
+        .from("finance_tracker_states")
+        .upsert({
+          household_id: cloudHouseholdId,
+          state: cloudStateForSave(),
+          version: 1,
+          updated_by: currentCloudUser.id,
+          updated_at: new Date().toISOString()
+        }, { onConflict: "household_id" });
+      if(error) {
+        refreshCloudUi("Cloud sync error");
+        setStorageStatus("Cloud sync failed", "#D94F4F");
+        if(showAlert) alert("Cloud sync failed: " + error.message);
+        return;
+      }
+      refreshCloudUi("Connected to Supabase");
+      setStorageStatus("Saved Local + Cloud");
+      if(showAlert) alert("Cloud sync complete.");
+    }
+
+    async function signOutCloud() {
+      const client = getSupabaseClient();
+      if(client) await client.auth.signOut();
+      currentCloudUser = null;
+      cloudReady = false;
+      cloudHouseholdId = null;
+      refreshCloudUi("Local mode");
+      setStorageStatus("Saved Locally");
+    }
+
+
+    initNavigation();
+    calculateAndRender();
+    initCloud();
+  </script>
+</body>
+</html>
